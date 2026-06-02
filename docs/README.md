@@ -7,6 +7,8 @@
 - `product-spec.md`: プロダクトのコンセプト、MVP範囲、ユーザーフロー、機能要件。
 - `architecture.md`: 初期のシステム境界、責務分担、モノレポ構成。
 - `roadmap.md`: MVPの実装順。
+- `hackathon.md`: Sui Overflow 2026の提出要件、審査基準、Hibiでの勝ち筋。
+- `walrus_track.md`: Walrus trackの問題設定と評価される方向性。
 - `decisions/`: 後から変更しにくい技術判断の記録。
 
 ## ドキュメント運用ルール
