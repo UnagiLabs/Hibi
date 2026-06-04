@@ -6,6 +6,7 @@
   "scripts": {
     "dev:api": "pnpm --filter @hibi/api dev",
     "build:api": "pnpm --filter @hibi/api build",
+    "test:api": "pnpm --filter @hibi/api test",
     "typecheck": "pnpm --filter @hibi/api typecheck",
     "db:generate": "pnpm --filter @hibi/api db:generate",
     "db:migrate": "pnpm --filter @hibi/api db:migrate",
