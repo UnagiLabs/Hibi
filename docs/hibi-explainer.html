@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hibi 説明書</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #202124;
+        --muted: #5f6368;
+        --line: #d9dde3;
+        --paper: #ffffff;
+        --wash: #f6f8fb;
+        --blue: #2f6fed;
+        --green: #147d64;
+        --orange: #b75c1b;
+        --pink: #b23a74;
+        --shadow: 0 16px 36px rgba(32, 33, 36, 0.08);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        color: var(--ink);
+        background: var(--wash);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.75;
+      }
+
+      main {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 64px;
+      }
+
+      header {
+        padding: 48px 0 28px;
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+
+      h1 {
+        font-size: clamp(36px, 6vw, 64px);
+        line-height: 1.08;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin-bottom: 18px;
+        font-size: 28px;
+        line-height: 1.25;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 18px;
+        line-height: 1.35;
+        letter-spacing: 0;
+      }
+
+      section {
+        margin-top: 22px;
+        padding: 28px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+      }
+
+      .lead {
+        max-width: 820px;
+        margin-top: 18px;
+        color: var(--muted);
+        font-size: 20px;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        min-height: 30px;
+        margin-bottom: 16px;
+        padding: 2px 10px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: var(--paper);
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .box {
+        min-height: 100%;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfcfe;
+      }
+
+      .box p,
+      .note,
+      li {
+        color: var(--muted);
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 10px;
+        align-items: stretch;
+      }
+
+      .step {
+        position: relative;
+        min-height: 116px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #fbfcfe;
+      }
+
+      .step::after {
+        content: "→";
+        position: absolute;
+        top: 50%;
+        right: -16px;
+        color: var(--muted);
+        transform: translateY(-50%);
+        font-weight: 700;
+      }
+
+      .step:last-child::after {
+        content: "";
+      }
+
+      .step strong {
+        display: block;
+        margin-bottom: 6px;
+        line-height: 1.35;
+      }
+
+      .step span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .blue {
+        border-top: 4px solid var(--blue);
+      }
+
+      .green {
+        border-top: 4px solid var(--green);
+      }
+
+      .orange {
+        border-top: 4px solid var(--orange);
+      }
+
+      .pink {
+        border-top: 4px solid var(--pink);
+      }
+
+      .timeline {
+        display: grid;
+        gap: 12px;
+        margin-top: 6px;
+      }
+
+      .phase {
+        display: grid;
+        grid-template-columns: 150px 1fr;
+        gap: 16px;
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .phase:first-child {
+        border-top: 0;
+      }
+
+      .phase b {
+        color: var(--blue);
+      }
+
+      code {
+        padding: 2px 6px;
+        border-radius: 6px;
+        background: #eef2f7;
+        color: #1f2937;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.92em;
+      }
+
+      pre {
+        overflow-x: auto;
+        margin: 14px 0 0;
+        padding: 16px;
+        border-radius: 8px;
+        background: #16202a;
+        color: #f4f7fb;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+
+      ul {
+        margin: 10px 0 0;
+        padding-left: 20px;
+      }
+
+      .callout {
+        margin-top: 16px;
+        padding: 16px;
+        border-left: 4px solid var(--green);
+        border-radius: 6px;
+        background: #effaf6;
+      }
+
+      .callout strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      footer {
+        margin-top: 24px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      @media (max-width: 920px) {
+        .grid,
+        .grid.two,
+        .flow {
+          grid-template-columns: 1fr;
+        }
+
+        .step::after {
+          content: "↓";
+          top: auto;
+          right: 50%;
+          bottom: -22px;
+          transform: translateX(50%);
+        }
+
+        .step {
+          min-height: auto;
+        }
+
+        .phase {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+      }
+
+      @media print {
+        body {
+          background: #ffffff;
+        }
+
+        main {
+          width: 100%;
+          padding: 0;
+        }
+
+        section {
+          break-inside: avoid;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div class="tag">Hibi / Family memories, remembered.</div>
+        <h1>Hibi の全体像をつかむ説明書</h1>
+        <p class="lead">
+          Hibi は、チャットに送った育児ログや写真を、DB・MemWal・Walrus・Sui に整理して保存し、あとから Web URL で見返せる Family Memory Agent です。
+        </p>
+      </header>
+
+      <section>
+        <h2>1. まず一言でいうと</h2>
+        <div class="grid two">
+          <div class="box blue">
+            <h3>ユーザー体験</h3>
+            <p>
+              家族がチャットに「ミルク120ml飲んだ」「この写真、はじめて寝返りした！」のように送るだけで、Hibi が記録・保存・検索・閲覧URL発行まで行います。
+            </p>
+          </div>
+          <div class="box green">
+            <h3>技術的な役割</h3>
+            <p>
+              Hibi API が中心になり、ルールによる下書き分類、LLMによる確認・補正、DB保存、MemWal remember/recall、Walrus upload、Sui pointer/hash 記録、Web表示用データ取得を担当します。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>2. 全体の流れ</h2>
+        <div class="flow" aria-label="Hibi workflow">
+          <div class="step blue">
+            <strong>Chat</strong>
+            <span>OpenClaw などから自然文や写真が送られる</span>
+          </div>
+          <div class="step blue">
+            <strong>Plugin</strong>
+            <span>チャット入力を Hibi API に渡す薄い入口</span>
+          </div>
+          <div class="step green">
+            <strong>Hibi API</strong>
+            <span>分類、保存、URL発行などの司令塔</span>
+          </div>
+          <div class="step green">
+            <strong>DB</strong>
+            <span>ログ、思い出、写真情報、閲覧URLを永続化</span>
+          </div>
+          <div class="step orange">
+            <strong>MemWal</strong>
+            <span>あとからAIが思い出せる長期記憶</span>
+          </div>
+          <div class="step pink">
+            <strong>Walrus / Sui</strong>
+            <span>写真・アルバム保存、hashやpointerの検証</span>
+          </div>
+          <div class="step blue">
+            <strong>Web</strong>
+            <span>URLを開いて育児ログやアルバムを見る</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>3. 部品ごとの役割</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>OpenClaw Plugin</h3>
+            <p>チャットアプリ側の入口です。できるだけ薄くして、入力を Hibi API に渡し、返ってきた返信文とURLを表示します。</p>
+          </div>
+          <div class="box">
+            <h3>Hibi API</h3>
+            <p>Hibi の中心です。<code>POST /api/messages</code> などを受け取り、分類、DB保存、外部サービス連携、URL発行を行います。</p>
+          </div>
+          <div class="box">
+            <h3>DB</h3>
+            <p>再起動後も残すための保存先です。<code>CareLog</code>、<code>MemoryItem</code>、<code>MediaAsset</code>、<code>Album</code>、<code>MemoryViewSession</code> を保存します。</p>
+          </div>
+          <div class="box">
+            <h3>MemWal</h3>
+            <p>AIの長期記憶です。「はじめて寝返りした」などの意味を保存し、「最近できるようになったことは？」で recall します。</p>
+          </div>
+          <div class="box">
+            <h3>Walrus</h3>
+            <p>写真や生成したアルバムmanifestなど、長く残したい artifact を保存します。ハッカソンでは実接続が重要です。</p>
+          </div>
+          <div class="box">
+            <h3>Sui</h3>
+            <p>写真本文や家族情報を直接載せる場所ではありません。Walrus blob の pointer や hash など、検証用metadataを記録します。</p>
+          </div>
+          <div class="box">
+            <h3>Web App</h3>
+            <p>チャットで返された <code>/v/:viewId</code> を開いて、育児ログ、写真、月次アルバム、保存状態を閲覧する画面です。</p>
+          </div>
+          <div class="box">
+            <h3>Core Package</h3>
+            <p>共通型、intent分類、MemWal/Walrus/Sui client、workflow helper などを置く共有パッケージです。</p>
+          </div>
+          <div class="box">
+            <h3>Contracts</h3>
+            <p>Sui Move contract を置く場所です。MVPでは後半で、pointer/hash 表示まで縮小してもよい領域です。</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>4. 代表的なユーザーフロー</h2>
+        <div class="grid two">
+          <div class="box green">
+            <h3>育児ログ</h3>
+            <p>ユーザーが「ミルク120ml飲んだ」と送ると、Hibi API が育児ログとして分類し、DBに保存し、今日のログURLを返します。</p>
+            <pre>POST /api/messages
+{
+  "text": "ミルク120ml飲んだ"
+}
+
+-> CareLog 保存
+-> /v/:viewId 発行
+-> Webで今日のログを表示</pre>
+          </div>
+          <div class="box orange">
+            <h3>写真と思い出</h3>
+            <p>ユーザーが写真と「はじめて寝返りした！」を送ると、写真は Walrus、コメントはDBとMemWalに保存します。</p>
+            <pre>POST /api/photos
+photo.jpg + comment
+
+-> Walrus upload
+-> MediaAsset 保存
+-> MemoryItem 保存
+-> MemWal remember</pre>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>5. 最初に作るべきもの</h2>
+        <p class="note">
+          いきなり MemWal / Walrus / Sui から作るのではなく、まず「チャット入力がDBに残り、URLでWeb表示できる」土台を作るのが安全です。
+        </p>
+        <div class="timeline">
+          <div class="phase">
+            <b>Step 1</b>
+            <div>
+              <h3>API skeleton</h3>
+              <p><code>GET /api/health</code> と <code>POST /api/messages</code> を作ります。ここで Hibi API の形を決めます。</p>
+            </div>
+          </div>
+          <div class="phase">
+            <b>Step 2</b>
+            <div>
+              <h3>DB schema</h3>
+              <p><code>User</code>、<code>Family</code>、<code>MemorySpace</code>、<code>CareLog</code>、<code>MemoryItem</code>、<code>MediaAsset</code>、<code>Album</code>、<code>MemoryViewSession</code> を用意します。</p>
+            </div>
+          </div>
+          <div class="phase">
+            <b>Step 3</b>
+            <div>
+              <h3>rule-based intent</h3>
+              <p>ルールで「ミルク」「母乳」「おっぱい」「寝た」「今起きた」「うんこ」「体温」などを構造化し、LLM validatorで確認・補正します。</p>
+            </div>
+          </div>
+          <div class="phase">
+            <b>Step 4</b>
+            <div>
+              <h3>care log view</h3>
+              <p>チャット返信に含まれるURLを開くと、DBに保存された今日の育児ログが表示されるようにします。</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout">
+          <strong>最初の完成ライン</strong>
+          <span><code>ミルク120ml飲んだ</code> を送るとDBに保存され、返ってきたURLを開くとWebで見える状態。</span>
+        </div>
+      </section>
+
+      <section>
+        <h2>6. 今は後回しでよいもの</h2>
+        <div class="grid two">
+          <div class="box">
+            <h3>OpenClaw Plugin</h3>
+            <p>APIが固まってから作る方が楽です。最初は curl や簡単なテストUIから Hibi API を叩けば十分です。</p>
+          </div>
+          <div class="box">
+            <h3>本格的なSui contract</h3>
+            <p>ハッカソンMVPでは、まず DB 上で hash/pointer を見せるところまで縮小できます。ただし Walrus と MemWal の実接続は重要です。</p>
+          </div>
+          <div class="box">
+            <h3>高度なAI分類</h3>
+            <p>LLMは最初から確認役として使います。ただしLLM障害時も、高confidenceのルール結果なら保存workflowを継続できるようにします。</p>
+          </div>
+          <div class="box">
+            <h3>複雑なWeb入力画面</h3>
+            <p>Hibi の中心はチャット入力です。Webはまず閲覧専用のアルバム、育児ログ、保存状態に集中します。</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>7. 用語ミニ辞典</h2>
+        <div class="grid">
+          <div class="box">
+            <h3>Intent</h3>
+            <p>ユーザー入力の目的です。例: <code>care_log</code>、<code>photo_memory</code>、<code>ask_memory</code>。</p>
+          </div>
+          <div class="box">
+            <h3>CareLog</h3>
+            <p>ミルク、睡眠、排泄、体温などの育児ログです。</p>
+          </div>
+          <div class="box">
+            <h3>MemoryItem</h3>
+            <p>写真コメントや日々の出来事など、あとから思い出として見返す本文です。</p>
+          </div>
+          <div class="box">
+            <h3>MediaAsset</h3>
+            <p>写真などのメディア情報です。Walrus blob ID もここに紐づきます。</p>
+          </div>
+          <div class="box">
+            <h3>AlbumManifest</h3>
+            <p>月次アルバムを表示するためのJSONです。Walrusに保存するartifact候補です。</p>
+          </div>
+          <div class="box">
+            <h3>MemoryViewSession</h3>
+            <p>チャット要求に応じて発行される閲覧URLです。Album本体とは分けて管理します。</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>8. 現在のリポジトリ状態</h2>
+        <p>
+          現在は planning / scaffold stage です。ディレクトリはありますが、<code>apps/api</code>、<code>apps/web</code>、<code>packages/core</code> はまだ実装前です。
+        </p>
+        <pre>apps/api                 Hibi API をこれから作る
+apps/web                 Web閲覧画面をこれから作る
+packages/core            共通型とworkflow helperをこれから作る
+packages/openclaw-plugin OpenClaw Pluginを後で作る
+contracts                Sui Move contractを後で作る</pre>
+      </section>
+
+      <footer>
+        Source docs: product-spec.md, architecture.md, roadmap.md, hackathon-functional-mvp-spec.md, memory-views-spec.md
+      </footer>
+    </main>
+  </body>
+</html>

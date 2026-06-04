@@ -5,6 +5,7 @@
 ## ファイル
 
 - `product-spec.md`: プロダクトのコンセプト、MVP範囲、ユーザーフロー、機能要件。
+- `hibi-explainer.html`: Hibiの全体構成、部品ごとの役割、最初に作るべきものをブラウザで読める説明書。
 - `architecture.md`: 初期のシステム境界、責務分担、モノレポ構成。
 - `roadmap.md`: MVPの実装順。
 - `hackathon-functional-mvp-spec.md`: ハッカソン提出物を実際に動くシステムとして作るための機能MVP仕様。チャット入力、育児ログ、写真保存、MemWal recall、Walrus保存、Web閲覧までの必須動作を定義する。
@@ -13,6 +14,7 @@
 - `hackathon.md`: Sui Overflow 2026の提出要件、審査基準、Hibiでの勝ち筋。
 - `walrus_track.md`: Walrus trackの問題設定と評価される方向性。
 - `decisions/`: 後から変更しにくい技術判断の記録。
+  - `decisions/0001-rule-parser-with-llm-validator.md`: intent分類をrule parser + LLM validatorにする判断。
 
 ## ドキュメント運用ルール
 

@@ -65,7 +65,7 @@ Chat input
 | 写真暗号化 | 最低限Walrus保存を優先。暗号化は可能なら実装 |
 | Sui contract | 既存objectまたは簡易pointer記録で可 |
 | 年次アルバム | MVP後。月次アルバムを優先 |
-| AI分類 | ルールベース + LLM補助で可 |
+| AI分類 | rule parser + LLM validator。LLM障害時は高confidenceのrule結果で継続可 |
 | OpenClaw以外 | 直接APIテストUIを補助で用意してよい |
 
 ---
@@ -504,23 +504,40 @@ type HibiIntent =
   | "help";
 ```
 
-### 7.2 ルールベース分類
+### 7.2 Rule Parser + LLM Validator
 
-ハッカソンMVPでは、まずルールベースでよい。
+ハッカソンMVPでは、ルールで構造化候補を作り、LLMで確認・補正する。
+
+```text
+User input
+  -> normalize
+  -> rule parser
+  -> LLM validator
+  -> final structured event
+  -> workflow
+```
+
+rule parserは同義語辞書、正規表現、時刻抽出を使う。LLM validatorはrule parserの結果を見て、intent、category、数量、時刻、confidenceを補正する。
+
+LLM timeout / failure時も、rule confidenceが高い場合はrule結果で保存してよい。rule parserとLLM validatorが大きく食い違う場合はlow confidenceとして扱い、必要に応じて確認メッセージを返す。
 
 | 入力 | intent | 抽出 |
 |---|---|---|
 | ミルク120ml | `care_log` | category=milk, amountMl=120 |
+| 母乳あげた | `care_log` | category=breastfeeding |
+| おっぱい飲んだ | `care_log` | category=breastfeeding |
 | 寝た | `care_log` | category=sleep_start |
+| 今寝た | `care_log` | category=sleep_start, occurredAt=receivedAt |
 | 起きた | `care_log` | category=sleep_end |
 | うんち | `care_log` | category=poop |
+| うんこした | `care_log` | category=poop |
 | 体温36.8 | `care_log` | category=temperature, value=36.8 |
 | 写真添付あり | `photo_memory` | media + text |
 | 思い出を見たい | `get_memory_view_url` | recent_memories |
 | 今月のアルバム | `generate_monthly_growth_album` | current month |
 | 最近できるようになったこと | `ask_memory` | recall query |
 
-LLM分類は追加してよいが、ルールベースで主要デモが壊れないことを優先する。
+保存時刻は `createdAt` と `occurredAt` を分ける。時刻が明示されない場合、`occurredAt` は受信時刻を使う。
 
 ---
 
@@ -839,7 +856,7 @@ curl /api/health でdb=okが返る
 ### Phase 2: チャット入力処理
 
 - `POST /api/messages`。
-- ルールベースintent分類。
+- rule parser + LLM validator。
 - 育児ログ保存。
 - 日々の思い出保存。
 
@@ -1013,6 +1030,7 @@ Web: 今日の育児ログに表示
 確認ポイント:
 
 - intent分類
+- LLM validator
 - DB保存
 - MemWal remember
 - Web閲覧

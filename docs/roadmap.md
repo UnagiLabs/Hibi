@@ -35,12 +35,17 @@ chat -> classify -> DB save -> MemWal remember -> Walrus artifact save -> MemWal
 
 ---
 
-## Phase 2: Rule-Based Intent Classification
+## Phase 2: Rule Parser And LLM Validator
 
-ゴール: ハッカソンで使う主要入力を壊れずに分類できる。
+ゴール: ルールで構造化候補を作り、LLMで確認・補正し、ハッカソンで使う主要入力を壊れずに分類できる。
 
 - intent classifier
+- input normalizer
+- synonym dictionary for care logs
 - care log parser
+- occurredAt parser
+- LLM validator
+- JSON schema validation
 - photo memory detection
 - memory view request detection
 - monthly album request detection
@@ -63,7 +68,9 @@ chat -> classify -> DB save -> MemWal remember -> Walrus artifact save -> MemWal
 完了条件:
 
 - 上記入力が正しいintentになる。
-- LLMなしでも主要シナリオが動く。
+- 通常経路ではrule parserの結果をLLM validatorが確認・補正する。
+- LLM timeout / failure時も、rule confidenceが高い主要シナリオは動く。
+- `createdAt` と `occurredAt` を分けて扱える。
 
 ---
 
