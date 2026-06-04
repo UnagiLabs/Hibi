@@ -88,3 +88,12 @@ The response includes a `viewId` and `viewUrl`. Fetch view data for the web app:
 ```bash
 curl http://127.0.0.1:4000/api/memory-views/<viewId>/bootstrap
 ```
+
+Start the Hibi Web app in another terminal:
+
+```bash
+cp apps/web/.env.example apps/web/.env
+pnpm dev:web
+```
+
+Open the `viewUrl` returned by `POST /api/messages`.

@@ -43,14 +43,6 @@ export async function registerMemoryViewRoutes(server: FastifyInstance) {
       });
     }
 
-    if (viewSession.viewType !== "care_log_day") {
-      return reply.status(400).send({
-        ok: false,
-        state: "unsupported_view_type",
-        viewType: viewSession.viewType
-      });
-    }
-
     const fallbackRange = getLocalDayRange(viewSession.createdAt);
     const rangeStart = viewSession.rangeStart ?? fallbackRange.start;
     const rangeEnd = viewSession.rangeEnd ?? fallbackRange.end;
@@ -68,26 +60,80 @@ export async function registerMemoryViewRoutes(server: FastifyInstance) {
       }
     });
 
-    return reply.send({
-      ok: true,
-      state: "ready",
-      view: {
-        id: viewSession.id,
-        type: viewSession.viewType,
-        status: viewSession.status,
-        rangeStart: rangeStart.toISOString(),
-        rangeEnd: rangeEnd.toISOString()
-      },
-      careLogs: careLogs.map((careLog) => ({
-        id: careLog.id,
-        category: careLog.category,
-        amount: careLog.amount,
-        unit: careLog.unit,
-        value: careLog.value,
-        sourceText: careLog.sourceText,
-        occurredAt: careLog.occurredAt.toISOString()
-      }))
+    if (viewSession.viewType === "care_log_day") {
+      return reply.send({
+        ok: true,
+        state: "ready",
+        view: {
+          id: viewSession.id,
+          type: viewSession.viewType,
+          status: viewSession.status,
+          rangeStart: rangeStart.toISOString(),
+          rangeEnd: rangeEnd.toISOString()
+        },
+        careLogs: careLogs.map(serializeCareLog)
+      });
+    }
+
+    if (viewSession.viewType === "monthly_growth_album") {
+      const album = viewSession.albumId
+        ? await prisma.album.findUnique({
+            where: {
+              id: viewSession.albumId
+            }
+          })
+        : null;
+
+      return reply.send({
+        ok: true,
+        state: "ready",
+        view: {
+          id: viewSession.id,
+          type: viewSession.viewType,
+          status: viewSession.status,
+          rangeStart: rangeStart.toISOString(),
+          rangeEnd: rangeEnd.toISOString()
+        },
+        album: album
+          ? {
+              id: album.id,
+              type: album.type,
+              title: album.title,
+              targetYear: album.targetYear,
+              targetMonth: album.targetMonth,
+              status: album.status,
+              manifestWalrusBlobId: album.manifestWalrusBlobId,
+              manifestSha256: album.manifestSha256
+            }
+          : null,
+        careLogs: careLogs.map(serializeCareLog)
+      });
+    }
+
+    return reply.status(400).send({
+      ok: false,
+      state: "unsupported_view_type",
+      viewType: viewSession.viewType
     });
   });
 }
 
+function serializeCareLog(careLog: {
+  id: string;
+  category: string;
+  amount: number | null;
+  unit: string | null;
+  value: number | null;
+  sourceText: string;
+  occurredAt: Date;
+}) {
+  return {
+    id: careLog.id,
+    category: careLog.category,
+    amount: careLog.amount,
+    unit: careLog.unit,
+    value: careLog.value,
+    sourceText: careLog.sourceText,
+    occurredAt: careLog.occurredAt.toISOString()
+  };
+}

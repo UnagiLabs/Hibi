@@ -5,9 +5,12 @@
   "packageManager": "pnpm@9.2.0",
   "scripts": {
     "dev:api": "pnpm --filter @hibi/api dev",
+    "dev:web": "pnpm --filter @hibi/web dev",
     "build:api": "pnpm --filter @hibi/api build",
+    "build:web": "pnpm --filter @hibi/web build",
     "test:api": "pnpm --filter @hibi/api test",
     "typecheck": "pnpm --filter @hibi/api typecheck",
+    "typecheck:web": "pnpm --filter @hibi/web typecheck",
     "db:generate": "pnpm --filter @hibi/api db:generate",
     "db:migrate": "pnpm --filter @hibi/api db:migrate",
     "db:seed": "pnpm --filter @hibi/api db:seed"
