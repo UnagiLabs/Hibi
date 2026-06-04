@@ -7,10 +7,10 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "db:generate": "prisma generate",
-    "db:migrate": "sqlite3 prisma/dev.db < prisma/migrations/0001_init.sql && prisma generate",
+    "db:migrate": "node scripts/run-sqlite-migrations.mjs && prisma generate",
     "db:seed": "prisma db seed",
     "start": "node dist/index.js",
-    "test": "tsx src/intent/rule-parser.test.ts && tsx src/ai/mock-message-validator.test.ts",
+    "test": "tsx src/intent/rule-parser.test.ts && tsx src/ai/mock-message-validator.test.ts && tsx src/time/day-range.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

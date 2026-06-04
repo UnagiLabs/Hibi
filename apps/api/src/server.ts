@@ -3,6 +3,7 @@ import Fastify from "fastify";
 
 import { config } from "./config.js";
 import { checkDatabase } from "./db.js";
+import { registerMemoryViewRoutes } from "./routes/memory-views.js";
 import { registerMessageRoutes } from "./routes/messages.js";
 
 export function buildServer() {
@@ -25,6 +26,7 @@ export function buildServer() {
   });
 
   server.register(registerMessageRoutes);
+  server.register(registerMemoryViewRoutes);
 
   return server;
 }

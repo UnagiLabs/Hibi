@@ -74,3 +74,17 @@ Health check:
 ```bash
 curl http://127.0.0.1:4000/api/health
 ```
+
+Record a care log:
+
+```bash
+curl -X POST http://127.0.0.1:4000/api/messages \
+  -H 'content-type: application/json' \
+  -d '{"text":"ミルク120ml飲んだ"}'
+```
+
+The response includes a `viewId` and `viewUrl`. Fetch view data for the web app:
+
+```bash
+curl http://127.0.0.1:4000/api/memory-views/<viewId>/bootstrap
+```

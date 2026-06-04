@@ -100,6 +100,8 @@ CREATE TABLE IF NOT EXISTS "MemoryViewSession" (
   "albumId" TEXT,
   "viewType" TEXT NOT NULL,
   "status" TEXT NOT NULL DEFAULT 'active',
+  "rangeStart" DATETIME,
+  "rangeEnd" DATETIME,
   "expiresAt" DATETIME,
   "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" DATETIME NOT NULL,
@@ -124,3 +126,4 @@ CREATE INDEX IF NOT EXISTS "MemoryViewSession_familyId_createdAt_idx" ON "Memory
 CREATE INDEX IF NOT EXISTS "MemoryViewSession_memorySpaceId_createdAt_idx" ON "MemoryViewSession" ("memorySpaceId", "createdAt");
 CREATE INDEX IF NOT EXISTS "MemoryViewSession_viewType_idx" ON "MemoryViewSession" ("viewType");
 CREATE INDEX IF NOT EXISTS "MemoryViewSession_status_idx" ON "MemoryViewSession" ("status");
+CREATE INDEX IF NOT EXISTS "MemoryViewSession_rangeStart_rangeEnd_idx" ON "MemoryViewSession" ("rangeStart", "rangeEnd");
