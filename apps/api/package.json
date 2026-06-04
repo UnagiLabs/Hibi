@@ -10,7 +10,7 @@
     "db:migrate": "sqlite3 prisma/dev.db < prisma/migrations/0001_init.sql && prisma generate",
     "db:seed": "prisma db seed",
     "start": "node dist/index.js",
-    "test": "tsx src/intent/rule-parser.test.ts",
+    "test": "tsx src/intent/rule-parser.test.ts && tsx src/ai/mock-message-validator.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

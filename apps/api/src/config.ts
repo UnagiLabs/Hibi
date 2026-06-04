@@ -18,8 +18,8 @@ function readPort(value: string | undefined): number {
 
 export const config = {
   nodeEnv: process.env.NODE_ENV ?? "development",
+  aiProvider: process.env.AI_PROVIDER ?? "mock",
   host: process.env.HOST ?? DEFAULT_HOST,
   port: readPort(process.env.PORT),
   webBaseUrl: process.env.HIBI_WEB_URL ?? "http://localhost:3000"
 };
-

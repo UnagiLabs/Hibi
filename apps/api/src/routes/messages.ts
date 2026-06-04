@@ -1,8 +1,11 @@
 import type { FastifyInstance } from "fastify";
 
+import { createMessageValidator } from "../ai/validator-factory.js";
 import { demoContext } from "../demo-context.js";
 import { prisma } from "../db.js";
 import { parseMessageWithRules } from "../intent/rule-parser.js";
+
+const messageValidator = createMessageValidator();
 
 type MessageRequestBody = {
   text?: unknown;
@@ -53,29 +56,39 @@ export async function registerMessageRoutes(server: FastifyInstance) {
       referenceTime: new Date(),
       defaultOccurredAt: parsed.defaultOccurredAt
     });
+    const validatedResult = await messageValidator.validate({
+      text: parsed.text,
+      ruleResult
+    });
 
-    if (ruleResult.intent === "care_log") {
+    if (validatedResult.intent === "care_log") {
       const careLog = await prisma.careLog.create({
         data: {
           familyId: demoContext.familyId,
           memorySpaceId: demoContext.memorySpaceId,
-          category: ruleResult.category,
-          amount: ruleResult.amount,
-          unit: ruleResult.unit,
-          value: ruleResult.value,
+          category: validatedResult.category,
+          amount: validatedResult.amount,
+          unit: validatedResult.unit,
+          value: validatedResult.value,
           sourceText: parsed.text,
-          occurredAt: ruleResult.occurredAt
+          occurredAt: validatedResult.occurredAt
         }
       });
 
       return reply.status(201).send({
         ok: true,
         careLogId: careLog.id,
-        intent: ruleResult.intent,
-        category: ruleResult.category,
-        confidence: ruleResult.confidence,
-        occurredAt: ruleResult.occurredAt.toISOString(),
-        reply: buildCareLogReply(ruleResult.category, ruleResult.amount, ruleResult.unit, ruleResult.value)
+        intent: validatedResult.intent,
+        category: validatedResult.category,
+        confidence: validatedResult.confidence,
+        validator: validatedResult.source,
+        occurredAt: validatedResult.occurredAt.toISOString(),
+        reply: buildCareLogReply(
+          validatedResult.category,
+          validatedResult.amount,
+          validatedResult.unit,
+          validatedResult.value
+        )
       });
     }
 
@@ -86,15 +99,16 @@ export async function registerMessageRoutes(server: FastifyInstance) {
         body: parsed.text,
         sourceText: parsed.text,
         source: "message",
-        occurredAt: ruleResult.occurredAt
+        occurredAt: validatedResult.occurredAt
       }
     });
 
     return reply.status(201).send({
       ok: true,
       messageId: memoryItem.id,
-      intent: ruleResult.intent,
-      confidence: ruleResult.confidence,
+      intent: validatedResult.intent,
+      confidence: validatedResult.confidence,
+      validator: validatedResult.source,
       reply: "メッセージを保存しました。"
     });
   });
