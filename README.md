@@ -97,3 +97,13 @@ pnpm dev:web
 ```
 
 Open the `viewUrl` returned by `POST /api/messages`.
+
+Create a monthly growth album view:
+
+```bash
+curl -X POST http://127.0.0.1:4000/api/albums/generate \
+  -H 'content-type: application/json' \
+  -d '{"targetYear":2026,"targetMonth":6}'
+```
+
+Open the returned `viewUrl` to see the album page.
