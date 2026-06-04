@@ -1,0 +1,17 @@
+{
+  "name": "hibi",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.2.0",
+  "scripts": {
+    "dev:api": "pnpm --filter @hibi/api dev",
+    "build:api": "pnpm --filter @hibi/api build",
+    "typecheck": "pnpm --filter @hibi/api typecheck",
+    "db:generate": "pnpm --filter @hibi/api db:generate",
+    "db:migrate": "pnpm --filter @hibi/api db:migrate",
+    "db:seed": "pnpm --filter @hibi/api db:seed"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

@@ -42,3 +42,35 @@ scripts/               Local development and maintenance scripts
 
 This repository is at the planning and scaffold stage. Implementation choices should follow the MVP phases in `docs/roadmap.md`.
 
+## Development
+
+Install dependencies:
+
+```bash
+pnpm install
+```
+
+Prepare API environment:
+
+```bash
+cp apps/api/.env.example apps/api/.env
+```
+
+Create the local SQLite database:
+
+```bash
+pnpm db:migrate
+pnpm db:seed
+```
+
+Start the Hibi API:
+
+```bash
+pnpm dev:api
+```
+
+Health check:
+
+```bash
+curl http://127.0.0.1:4000/api/health
+```

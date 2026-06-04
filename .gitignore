@@ -11,6 +11,7 @@ coverage/
 .env
 .env.*
 !.env.example
+!**/.env.example
 
 # Logs
 *.log
@@ -18,8 +19,11 @@ npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*
 
+# SQLite / Prisma local files
+*.db
+*.db-journal
+
 # OS and editor
 .DS_Store
 .idea/
 .vscode/
-
