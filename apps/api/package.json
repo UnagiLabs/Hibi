@@ -1,0 +1,28 @@
+{
+  "name": "@hibi/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "db:generate": "prisma generate",
+    "db:migrate": "node scripts/run-sqlite-migrations.mjs && prisma generate",
+    "db:seed": "prisma db seed",
+    "start": "node dist/index.js",
+    "test": "tsx src/intent/rule-parser.test.ts && tsx src/ai/mock-message-validator.test.ts && tsx src/time/day-range.test.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.2",
+    "@prisma/client": "6.19.2",
+    "dotenv": "^16.4.7",
+    "fastify": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "prisma": "6.19.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}

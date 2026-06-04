@@ -1,0 +1,156 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Family {
+  id           String              @id @default(cuid())
+  displayName  String
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  users        User[]
+  memorySpaces MemorySpace[]
+  careLogs     CareLog[]
+  memoryItems  MemoryItem[]
+  mediaAssets  MediaAsset[]
+  albums       Album[]
+  viewSessions MemoryViewSession[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  familyId  String
+  name      String
+  role      String   @default("guardian")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  family    Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+
+  @@index([familyId])
+}
+
+model MemorySpace {
+  id           String              @id @default(cuid())
+  familyId     String
+  type         String              @default("baby")
+  displayName  String
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  family       Family              @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  careLogs     CareLog[]
+  memoryItems  MemoryItem[]
+  mediaAssets  MediaAsset[]
+  albums       Album[]
+  viewSessions MemoryViewSession[]
+
+  @@index([familyId])
+}
+
+model CareLog {
+  id            String      @id @default(cuid())
+  familyId      String
+  memorySpaceId String
+  category      String
+  amount        Float?
+  unit          String?
+  value         Float?
+  sourceText    String
+  occurredAt    DateTime
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  family        Family      @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memorySpace   MemorySpace @relation(fields: [memorySpaceId], references: [id], onDelete: Cascade)
+
+  @@index([familyId, occurredAt])
+  @@index([memorySpaceId, occurredAt])
+  @@index([category])
+}
+
+model MemoryItem {
+  id            String      @id @default(cuid())
+  familyId      String
+  memorySpaceId String
+  mediaAssetId  String?
+  title         String?
+  body          String
+  sourceText    String
+  source        String      @default("message")
+  occurredAt    DateTime
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  family        Family      @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memorySpace   MemorySpace @relation(fields: [memorySpaceId], references: [id], onDelete: Cascade)
+  mediaAsset    MediaAsset? @relation(fields: [mediaAssetId], references: [id], onDelete: SetNull)
+
+  @@index([familyId, occurredAt])
+  @@index([memorySpaceId, occurredAt])
+}
+
+model MediaAsset {
+  id            String       @id @default(cuid())
+  familyId      String
+  memorySpaceId String
+  originalName  String?
+  mimeType      String?
+  sizeBytes     Int?
+  walrusBlobId  String?
+  sha256        String?
+  status        String       @default("pending")
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  family        Family       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memorySpace   MemorySpace  @relation(fields: [memorySpaceId], references: [id], onDelete: Cascade)
+  memoryItems   MemoryItem[]
+
+  @@index([familyId, createdAt])
+  @@index([memorySpaceId, createdAt])
+  @@index([walrusBlobId])
+}
+
+model Album {
+  id                   String              @id @default(cuid())
+  familyId             String
+  memorySpaceId        String
+  type                 String
+  title                String
+  targetYear           Int?
+  targetMonth          Int?
+  manifestWalrusBlobId String?
+  manifestSha256       String?
+  status               String              @default("draft")
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  family               Family              @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memorySpace          MemorySpace         @relation(fields: [memorySpaceId], references: [id], onDelete: Cascade)
+  viewSessions         MemoryViewSession[]
+
+  @@index([familyId, type])
+  @@index([memorySpaceId, type])
+}
+
+model MemoryViewSession {
+  id            String      @id @default(cuid())
+  familyId      String
+  memorySpaceId String
+  albumId       String?
+  viewType      String
+  status        String      @default("active")
+  rangeStart    DateTime?
+  rangeEnd      DateTime?
+  expiresAt     DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  family        Family      @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memorySpace   MemorySpace @relation(fields: [memorySpaceId], references: [id], onDelete: Cascade)
+  album         Album?      @relation(fields: [albumId], references: [id], onDelete: SetNull)
+
+  @@index([familyId, createdAt])
+  @@index([memorySpaceId, createdAt])
+  @@index([viewType])
+  @@index([status])
+  @@index([rangeStart, rangeEnd])
+}
