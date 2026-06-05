@@ -11,9 +11,14 @@ type GenerateAlbumBody = {
   targetMonth?: unknown;
 };
 
+type MonthlyAlbumQuery = {
+  targetYear?: unknown;
+  targetMonth?: unknown;
+};
+
 export async function registerAlbumRoutes(server: FastifyInstance) {
-  server.post("/api/albums/generate", async (request, reply) => {
-    const parsed = parseGenerateAlbumBody(request.body);
+  server.get<{ Querystring: MonthlyAlbumQuery }>("/api/albums/monthly", async (request, reply) => {
+    const parsed = parseMonthInput(request.query);
 
     if (!parsed.ok) {
       return reply.status(400).send({
@@ -23,7 +28,41 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
     }
 
     const monthRange = parsed.monthRange;
-    const title = `${monthRange.year}年${monthRange.month}月の成長アルバム`;
+    const album = await prisma.album.findFirst({
+      where: {
+        familyId: demoContext.familyId,
+        memorySpaceId: demoContext.memorySpaceId,
+        type: "monthly_growth_album",
+        targetYear: monthRange.year,
+        targetMonth: monthRange.month
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+
+    return reply.send({
+      ok: true,
+      albumId: album?.id ?? null,
+      title: album?.title ?? buildMonthlyAlbumTitle(monthRange.year, monthRange.month),
+      targetYear: monthRange.year,
+      targetMonth: monthRange.month,
+      memwalHighlights: await buildMonthlyMemWalHighlights(monthRange)
+    });
+  });
+
+  server.post("/api/albums/generate", async (request, reply) => {
+    const parsed = parseMonthInput(request.body);
+
+    if (!parsed.ok) {
+      return reply.status(400).send({
+        ok: false,
+        error: parsed.message
+      });
+    }
+
+    const monthRange = parsed.monthRange;
+    const title = buildMonthlyAlbumTitle(monthRange.year, monthRange.month);
     const { album, viewSession } = await prisma.$transaction(async (tx) => {
       const existingAlbum = await tx.album.findFirst({
         where: {
@@ -64,14 +103,6 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       return { album, viewSession };
     });
     const viewUrl = buildViewUrl(viewSession.id);
-    const memwalHighlights = filterMonthlyHighlights(
-      await recallDemoMonthlyHighlights({
-        year: monthRange.year,
-        month: monthRange.month,
-        limit: 8
-      }),
-      monthRange
-    );
 
     return reply.status(201).send({
       ok: true,
@@ -81,46 +112,71 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       title: album.title,
       targetYear: monthRange.year,
       targetMonth: monthRange.month,
-      memwalHighlights,
+      memwalHighlights: await buildMonthlyMemWalHighlights(monthRange),
       reply: `${album.title}を用意しました。${viewUrl}`
     });
   });
 }
 
-function parseGenerateAlbumBody(body: unknown):
+function parseMonthInput(input: unknown):
   | { ok: true; monthRange: ReturnType<typeof getLocalMonthRange> }
   | { ok: false; message: string } {
-  if (body === undefined || body === null) {
+  if (input === undefined || input === null) {
     return { ok: true, monthRange: getLocalMonthRange(new Date()) };
   }
 
-  if (typeof body !== "object") {
+  if (typeof input !== "object") {
     return { ok: false, message: "Request body must be a JSON object." };
   }
 
-  const { targetYear, targetMonth } = body as GenerateAlbumBody;
+  const { targetYear, targetMonth } = input as GenerateAlbumBody;
+  const parsedYear = parseOptionalInteger(targetYear);
+  const parsedMonth = parseOptionalInteger(targetMonth);
 
   if (targetYear === undefined && targetMonth === undefined) {
     return { ok: true, monthRange: getLocalMonthRange(new Date()) };
   }
 
-  if (!isInteger(targetYear) || !isInteger(targetMonth)) {
+  if (parsedYear === null || parsedMonth === null) {
     return { ok: false, message: "`targetYear` and `targetMonth` must be integers." };
   }
 
-  if (targetYear < 2000 || targetYear > 2100 || targetMonth < 1 || targetMonth > 12) {
+  if (parsedYear < 2000 || parsedYear > 2100 || parsedMonth < 1 || parsedMonth > 12) {
     return { ok: false, message: "`targetYear` or `targetMonth` is out of range." };
   }
 
-  return { ok: true, monthRange: getLocalMonthRangeFromParts(targetYear, targetMonth) };
+  return { ok: true, monthRange: getLocalMonthRangeFromParts(parsedYear, parsedMonth) };
 }
 
 function buildViewUrl(viewId: string): string {
   return `${config.webBaseUrl.replace(/\/$/, "")}/v/${viewId}`;
 }
 
-function isInteger(value: unknown): value is number {
-  return typeof value === "number" && Number.isInteger(value);
+function buildMonthlyAlbumTitle(year: number, month: number): string {
+  return `${year}年${month}月の成長アルバム`;
+}
+
+function parseOptionalInteger(value: unknown): number | null {
+  if (typeof value === "number" && Number.isInteger(value)) {
+    return value;
+  }
+
+  if (typeof value === "string" && /^-?\d+$/.test(value)) {
+    return Number.parseInt(value, 10);
+  }
+
+  return null;
+}
+
+async function buildMonthlyMemWalHighlights(monthRange: ReturnType<typeof getLocalMonthRange>) {
+  return filterMonthlyHighlights(
+    await recallDemoMonthlyHighlights({
+      year: monthRange.year,
+      month: monthRange.month,
+      limit: 8
+    }),
+    monthRange
+  );
 }
 
 function filterMonthlyHighlights(
