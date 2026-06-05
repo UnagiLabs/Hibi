@@ -19,6 +19,7 @@ model Family {
   mediaAssets  MediaAsset[]
   albums       Album[]
   viewSessions MemoryViewSession[]
+  memwalRefs   MemWalMemoryRef[]
 }
 
 model User {
@@ -46,6 +47,7 @@ model MemorySpace {
   mediaAssets  MediaAsset[]
   albums       Album[]
   viewSessions MemoryViewSession[]
+  memwalRefs   MemWalMemoryRef[]
 
   @@index([familyId])
 }
@@ -153,4 +155,29 @@ model MemoryViewSession {
   @@index([viewType])
   @@index([status])
   @@index([rangeStart, rangeEnd])
+}
+
+model MemWalMemoryRef {
+  id            String   @id @default(cuid())
+  familyId      String
+  memorySpaceId String
+  sourceType    String
+  sourceId      String
+  namespace     String
+  status        String   @default("pending")
+  jobId         String?
+  blobId        String?
+  error         String?
+  textPreview   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  family        Family   @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  memorySpace   MemorySpace @relation(fields: [memorySpaceId], references: [id], onDelete: Cascade)
+
+  @@index([familyId, createdAt])
+  @@index([memorySpaceId, createdAt])
+  @@index([sourceType, sourceId])
+  @@index([status])
+  @@index([jobId])
+  @@index([blobId])
 }

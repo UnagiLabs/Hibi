@@ -3,6 +3,7 @@ import Fastify from "fastify";
 
 import { config } from "./config.js";
 import { checkDatabase } from "./db.js";
+import { checkMemWal } from "./memwal/client.js";
 import { registerAlbumRoutes } from "./routes/albums.js";
 import { registerMemoryViewRoutes } from "./routes/memory-views.js";
 import { registerMessageRoutes } from "./routes/messages.js";
@@ -22,7 +23,8 @@ export function buildServer() {
     return {
       ok: true,
       service: "hibi-api",
-      db: await checkDatabase()
+      db: await checkDatabase(),
+      memwal: await checkMemWal()
     };
   });
 

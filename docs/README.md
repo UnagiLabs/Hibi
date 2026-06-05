@@ -11,7 +11,7 @@
 - `hackathon-functional-mvp-spec.md`: ハッカソン提出物を実際に動くシステムとして作るための機能MVP仕様。チャット入力、育児ログ、写真保存、MemWal recall、Walrus保存、Web閲覧までの必須動作を定義する。
 - `memory-views-spec.md`: チャットから閲覧URLを返すMemory View、写真ギャラリー、月次/年次成長アルバム、Webアプリ、URL安全設計の完全仕様。
 - `web-ui-blueprint.md`: Hibi Webアプリの画面構成、UIコンポーネント、月次/年次ハイライト、On This Dayの設計図。
-- `memwal-integration.md`: MemWal / Walrus Memoryの採用方針、Default SDK、Managed Relayer、namespace、remember/recall設計。
+- `memwal-setup.md`: MemWal / Walrus Memoryの採用方針、staging/testnetの設定方法、必要env、namespace、health確認手順。
 - `hackathon.md`: Sui Overflow 2026の提出要件、審査基準、Hibiでの勝ち筋。
 - `walrus_track.md`: Walrus trackの問題設定と評価される方向性。
 - `decisions/`: 後から変更しにくい技術判断の記録。

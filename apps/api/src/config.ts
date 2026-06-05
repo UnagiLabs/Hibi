@@ -21,5 +21,17 @@ export const config = {
   aiProvider: process.env.AI_PROVIDER ?? "mock",
   host: process.env.HOST ?? DEFAULT_HOST,
   port: readPort(process.env.PORT),
-  webBaseUrl: process.env.HIBI_WEB_URL ?? "http://localhost:3000"
+  webBaseUrl: process.env.HIBI_WEB_URL ?? "http://localhost:3000",
+  memwal: {
+    accountId: process.env.MEMWAL_ACCOUNT_ID?.trim() || undefined,
+    privateKey:
+      process.env.MEMWAL_PRIVATE_KEY?.trim() ||
+      process.env.MEMWAL_DELEGATE_PRIVATE_KEY?.trim() ||
+      undefined,
+    serverUrl:
+      process.env.MEMWAL_SERVER_URL?.trim() ||
+      "https://relayer.memory.walrus.xyz",
+    namespacePrefix: process.env.MEMWAL_NAMESPACE_PREFIX?.trim() || "hibi",
+    env: process.env.MEMWAL_ENV?.trim() || "testnet"
+  }
 };
