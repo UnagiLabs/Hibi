@@ -67,6 +67,27 @@ export async function recallDemoMemory(query: string, limit = DEFAULT_LIMIT): Pr
   });
 }
 
+export async function recallDemoMonthlyHighlights({
+  year,
+  month,
+  limit = DEFAULT_LIMIT
+}: {
+  year: number;
+  month: number;
+  limit?: number;
+}): Promise<MemWalRecallOutcome> {
+  return recallDemoMemory(
+    [
+      `${year}年${month}月のできるようになったこと`,
+      "成長",
+      "初めての出来事",
+      "milestone",
+      "first time"
+    ].join(" / "),
+    limit
+  );
+}
+
 async function recallHibiMemory({
   familyId,
   memorySpaceId,

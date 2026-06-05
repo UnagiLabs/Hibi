@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 import { config } from "../config.js";
 import { demoContext } from "../demo-context.js";
 import { prisma } from "../db.js";
+import { recallDemoMonthlyHighlights, type EnrichedRecallResult } from "../memwal/recall.js";
 import { getLocalMonthRange, getLocalMonthRangeFromParts } from "../time/month-range.js";
 
 type GenerateAlbumBody = {
@@ -63,6 +64,14 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       return { album, viewSession };
     });
     const viewUrl = buildViewUrl(viewSession.id);
+    const memwalHighlights = filterMonthlyHighlights(
+      await recallDemoMonthlyHighlights({
+        year: monthRange.year,
+        month: monthRange.month,
+        limit: 8
+      }),
+      monthRange
+    );
 
     return reply.status(201).send({
       ok: true,
@@ -72,6 +81,7 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       title: album.title,
       targetYear: monthRange.year,
       targetMonth: monthRange.month,
+      memwalHighlights,
       reply: `${album.title}を用意しました。${viewUrl}`
     });
   });
@@ -111,4 +121,30 @@ function buildViewUrl(viewId: string): string {
 
 function isInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isInteger(value);
+}
+
+function filterMonthlyHighlights(
+  recall: Awaited<ReturnType<typeof recallDemoMonthlyHighlights>>,
+  monthRange: ReturnType<typeof getLocalMonthRange>
+) {
+  if (recall.status !== "ok") {
+    return recall;
+  }
+
+  return {
+    ...recall,
+    results: recall.results.filter((result) => isInMonth(result, monthRange))
+  };
+}
+
+function isInMonth(result: EnrichedRecallResult, monthRange: ReturnType<typeof getLocalMonthRange>): boolean {
+  const occurredAt = result.source?.type === "care_log" || result.source?.type === "memory_item"
+    ? new Date(result.source.occurredAt)
+    : null;
+
+  return Boolean(
+    occurredAt &&
+      occurredAt.getTime() >= monthRange.start.getTime() &&
+      occurredAt.getTime() < monthRange.end.getTime()
+  );
 }
