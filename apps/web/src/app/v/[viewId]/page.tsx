@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { WalletSlot } from "@/components/wallet-slot";
 import type { CareLog } from "@/lib/api";
 import { fetchMemoryView } from "@/lib/api";
 import { formatCareLogValue, formatDateRange, formatMonthRange, formatTime } from "@/lib/format";
@@ -35,7 +36,7 @@ export default async function MemoryViewPage({ params, searchParams }: PageProps
   if (!response.ok) {
     return (
       <main className="shell">
-        <LanguageSwitch viewId={viewId} locale={locale} />
+        <TopBar viewId={viewId} locale={locale} />
         <StatusPanel
           title={dictionary.appName}
           message={messageForState(response.state, dictionary)}
@@ -48,7 +49,7 @@ export default async function MemoryViewPage({ params, searchParams }: PageProps
   if (response.view.type === "monthly_growth_album") {
     return (
       <main className="shell">
-        <LanguageSwitch viewId={viewId} locale={locale} />
+        <TopBar viewId={viewId} locale={locale} />
         <AlbumView response={response} locale={locale} />
       </main>
     );
@@ -56,7 +57,7 @@ export default async function MemoryViewPage({ params, searchParams }: PageProps
 
   return (
     <main className="shell">
-      <LanguageSwitch viewId={viewId} locale={locale} />
+      <TopBar viewId={viewId} locale={locale} />
       <CareLogView response={response} locale={locale} />
     </main>
   );
@@ -244,6 +245,15 @@ function CareLogItem({ log, locale }: { log: CareLog; locale: Locale }) {
         <p>{log.sourceText}</p>
       </div>
     </li>
+  );
+}
+
+function TopBar({ viewId, locale }: { viewId: string; locale: Locale }) {
+  return (
+    <div className="top-bar">
+      <WalletSlot locale={locale} />
+      <LanguageSwitch viewId={viewId} locale={locale} />
+    </div>
   );
 }
 

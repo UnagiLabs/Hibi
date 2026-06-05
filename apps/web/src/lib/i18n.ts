@@ -22,6 +22,10 @@ export type Dictionary = {
   unsupported: string;
   apiUnavailable: string;
   language: string;
+  wallet: string;
+  walletPrompt: string;
+  walletConnected: string;
+  walletDemoMode: string;
   ja: string;
   en: string;
   categories: Record<string, string>;
@@ -50,6 +54,10 @@ const dictionaries: Record<Locale, Dictionary> = {
     unsupported: "このビュー形式はまだ表示できません。",
     apiUnavailable: "Hibi APIに接続できません。",
     language: "Language",
+    wallet: "ウォレット",
+    walletPrompt: "ウォレットを接続",
+    walletConnected: "接続済みウォレット",
+    walletDemoMode: "現在はdemo modeです。次の段階でFamilyVault確認に使います。",
     ja: "日本語",
     en: "English",
     categories: {
@@ -84,6 +92,10 @@ const dictionaries: Record<Locale, Dictionary> = {
     unsupported: "This view type is not supported yet.",
     apiUnavailable: "Cannot connect to Hibi API.",
     language: "Language",
+    wallet: "Wallet",
+    walletPrompt: "Connect wallet",
+    walletConnected: "Connected wallet",
+    walletDemoMode: "Demo mode for now. This will verify FamilyVault ownership later.",
     ja: "日本語",
     en: "English",
     categories: {

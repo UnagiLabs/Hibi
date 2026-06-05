@@ -107,3 +107,9 @@ curl -X POST http://127.0.0.1:4000/api/albums/generate \
 ```
 
 Open the returned `viewUrl` to see the album page.
+
+Wallet connection:
+
+- The web view includes a Sui wallet connection panel.
+- Current behavior is demo mode only: connected wallet address is displayed, but FamilyVault ownership is not enforced yet.
+- Sui FamilyVault verification will be added in a later phase.
