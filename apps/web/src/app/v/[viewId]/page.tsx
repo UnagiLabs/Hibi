@@ -1,11 +1,9 @@
 import {
   Baby,
   CalendarDays,
-  CircleAlert,
   Droplets,
   Heart,
   Images,
-  Languages,
   Milk,
   Moon,
   Sparkles,
@@ -15,11 +13,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { WalletSlot } from "@/components/wallet-slot";
+import { SiteHeader } from "@/components/site-header";
 import type { CareLog } from "@/lib/api";
 import { fetchMemoryView } from "@/lib/api";
 import { formatCareLogValue, formatDateRange, formatMonthRange, formatTime } from "@/lib/format";
-import { getDictionary, parseLocale, type Locale } from "@/lib/i18n";
+import { getDictionary, parseLocale, withLocale, type Locale } from "@/lib/i18n";
 
 type PageProps = {
   params: Promise<{ viewId: string }>;
@@ -32,16 +30,13 @@ export default async function MemoryViewPage({ params, searchParams }: PageProps
   const locale = parseLocale(query.lang);
   const dictionary = getDictionary(locale);
   const response = await safeFetchMemoryView(viewId);
+  const currentPath = `/v/${viewId}`;
 
   if (!response.ok) {
     return (
       <main className="shell">
-        <TopBar viewId={viewId} locale={locale} />
-        <StatusPanel
-          title={dictionary.appName}
-          message={messageForState(response.state, dictionary)}
-          locale={locale}
-        />
+        <SiteHeader locale={locale} currentPath={currentPath} active="careLog" />
+        <StatusPanel message={messageForState(response.state, dictionary)} locale={locale} />
       </main>
     );
   }
@@ -49,7 +44,7 @@ export default async function MemoryViewPage({ params, searchParams }: PageProps
   if (response.view.type === "monthly_growth_album") {
     return (
       <main className="shell">
-        <TopBar viewId={viewId} locale={locale} />
+        <SiteHeader locale={locale} currentPath={currentPath} active="albums" />
         <AlbumView response={response} locale={locale} />
       </main>
     );
@@ -57,7 +52,7 @@ export default async function MemoryViewPage({ params, searchParams }: PageProps
 
   return (
     <main className="shell">
-      <TopBar viewId={viewId} locale={locale} />
+      <SiteHeader locale={locale} currentPath={currentPath} active="careLog" />
       <CareLogView response={response} locale={locale} />
     </main>
   );
@@ -248,45 +243,16 @@ function CareLogItem({ log, locale }: { log: CareLog; locale: Locale }) {
   );
 }
 
-function TopBar({ viewId, locale }: { viewId: string; locale: Locale }) {
-  return (
-    <div className="top-bar">
-      <WalletSlot locale={locale} />
-      <LanguageSwitch viewId={viewId} locale={locale} />
-    </div>
-  );
-}
-
-function LanguageSwitch({ viewId, locale }: { viewId: string; locale: Locale }) {
+function StatusPanel({ message, locale }: { message: string; locale: Locale }) {
   const dictionary = getDictionary(locale);
-  const otherLocale = locale === "ja" ? "en" : "ja";
-
   return (
-    <nav className="language-switch" aria-label={dictionary.language}>
-      <Languages size={16} aria-hidden="true" />
-      <Link href={`/v/${viewId}?lang=${otherLocale}`}>
-        {locale === "ja" ? dictionary.en : dictionary.ja}
-      </Link>
-    </nav>
-  );
-}
-
-function StatusPanel({
-  title,
-  message,
-  locale
-}: {
-  title: string;
-  message: string;
-  locale: Locale;
-}) {
-  return (
-    <section className="empty-state">
-      <div className="brand-mark">{title}</div>
-      <CircleAlert size={36} aria-hidden="true" />
+    <section className="empty-state fade-up">
+      <span className="empty-emoji" aria-hidden="true">
+        🍼
+      </span>
       <p>{message}</p>
-      <Link className="text-link" href={`/?lang=${locale}`}>
-        {title}
+      <Link className="primary-link" href={withLocale("/", locale)}>
+        {dictionary.backHome}
       </Link>
     </section>
   );
