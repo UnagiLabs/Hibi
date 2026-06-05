@@ -10,7 +10,7 @@
     "db:migrate": "node scripts/run-sqlite-migrations.mjs && prisma generate",
     "db:seed": "prisma db seed",
     "start": "node dist/index.js",
-    "test": "tsx src/intent/rule-parser.test.ts && tsx src/ai/mock-message-validator.test.ts && tsx src/time/day-range.test.ts",
+    "test": "tsx src/intent/rule-parser.test.ts && tsx src/ai/mock-message-validator.test.ts && tsx src/time/day-range.test.ts && tsx src/time/month-range.test.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

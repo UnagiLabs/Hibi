@@ -1,0 +1,27 @@
+{
+  "name": "@hibi/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start -p 3000",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@mysten/dapp-kit-react": "^2.0.3",
+    "@mysten/sui": "^2.17.0",
+    "@tanstack/react-query": "^5.101.0",
+    "lucide-react": "0.468.0",
+    "next": "16.2.2",
+    "react": "19.2.1",
+    "react-dom": "19.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.7.2"
+  }
+}

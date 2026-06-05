@@ -88,3 +88,28 @@ The response includes a `viewId` and `viewUrl`. Fetch view data for the web app:
 ```bash
 curl http://127.0.0.1:4000/api/memory-views/<viewId>/bootstrap
 ```
+
+Start the Hibi Web app in another terminal:
+
+```bash
+cp apps/web/.env.example apps/web/.env
+pnpm dev:web
+```
+
+Open the `viewUrl` returned by `POST /api/messages`.
+
+Create a monthly growth album view:
+
+```bash
+curl -X POST http://127.0.0.1:4000/api/albums/generate \
+  -H 'content-type: application/json' \
+  -d '{"targetYear":2026,"targetMonth":6}'
+```
+
+Open the returned `viewUrl` to see the album page.
+
+Wallet connection:
+
+- The web view includes a Sui wallet connection panel.
+- Current behavior is demo mode only: connected wallet address is displayed, but FamilyVault ownership is not enforced yet.
+- Sui FamilyVault verification will be added in a later phase.
