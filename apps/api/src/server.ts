@@ -7,6 +7,7 @@ import { checkMemWal } from "./memwal/client.js";
 import { registerAlbumRoutes } from "./routes/albums.js";
 import { registerMemoryViewRoutes } from "./routes/memory-views.js";
 import { registerMessageRoutes } from "./routes/messages.js";
+import { registerRecallRoutes } from "./routes/recall.js";
 
 export function buildServer() {
   const server = Fastify({
@@ -30,6 +31,7 @@ export function buildServer() {
 
   server.register(registerAlbumRoutes);
   server.register(registerMessageRoutes);
+  server.register(registerRecallRoutes);
   server.register(registerMemoryViewRoutes);
 
   return server;
