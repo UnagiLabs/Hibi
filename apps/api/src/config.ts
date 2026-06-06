@@ -50,7 +50,11 @@ export const config = {
   },
   sui: {
     network: process.env.SUI_NETWORK?.trim() || "testnet",
-    privateKey: process.env.SUI_PRIVATE_KEY?.trim() || undefined
+    privateKey: process.env.SUI_PRIVATE_KEY?.trim() || undefined,
+    packageId: process.env.HIBI_SUI_PACKAGE_ID?.trim() || undefined,
+    adminCapId: process.env.HIBI_SUI_ADMIN_CAP_ID?.trim() || undefined,
+    familyVaultId: process.env.HIBI_SUI_FAMILY_VAULT_ID?.trim() || undefined,
+    memberSbtId: process.env.HIBI_SUI_MEMBER_SBT_ID?.trim() || undefined
   },
   walrus: {
     epochs: readPositiveInteger(process.env.WALRUS_EPOCHS, DEFAULT_WALRUS_EPOCHS, "WALRUS_EPOCHS"),

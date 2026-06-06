@@ -5,6 +5,7 @@ import { config } from "../config.js";
 import { demoContext } from "../demo-context.js";
 import { prisma } from "../db.js";
 import { recallDemoMonthlyHighlights, type EnrichedRecallResult } from "../memwal/recall.js";
+import { recordAlbumOnSui } from "../sui/client.js";
 import { getLocalMonthRange, getLocalMonthRangeFromParts } from "../time/month-range.js";
 import { archiveAlbumManifestToWalrus } from "../walrus/client.js";
 
@@ -144,6 +145,19 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       mediaAssets
     });
     const walrusArtifact = await archiveAlbumManifestToWalrus(manifestArtifact);
+    const suiRecord = walrusArtifact.status === "done"
+      ? await recordAlbumOnSui({
+          albumType: manifestArtifact.manifest.type,
+          targetYear: monthRange.year,
+          targetMonth: monthRange.month,
+          manifestWalrusBlobId: walrusArtifact.blobId,
+          manifestSha256: manifestArtifact.sha256,
+          createdAtMs: Date.now()
+        })
+      : {
+          status: "disabled" as const,
+          reason: "walrus_manifest_not_archived" as const
+        };
     const updatedAlbum = await prisma.album.update({
       where: {
         id: album.id
@@ -169,6 +183,7 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       photos: mediaAssets.map(serializeMonthlyPhoto),
       memwalHighlights,
       walrusArtifact,
+      suiRecord,
       reply: `${updatedAlbum.title}を用意しました。${viewUrl}`
     });
   });

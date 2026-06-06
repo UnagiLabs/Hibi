@@ -10,6 +10,7 @@ import { registerMediaRoutes } from "./routes/media.js";
 import { registerMemoryViewRoutes } from "./routes/memory-views.js";
 import { registerMessageRoutes } from "./routes/messages.js";
 import { registerRecallRoutes } from "./routes/recall.js";
+import { checkSuiContract } from "./sui/client.js";
 
 export function buildServer() {
   const server = Fastify({
@@ -34,7 +35,8 @@ export function buildServer() {
       ok: true,
       service: "hibi-api",
       db: await checkDatabase(),
-      memwal: await checkMemWal()
+      memwal: await checkMemWal(),
+      sui: await checkSuiContract()
     };
   });
 
