@@ -1,10 +1,12 @@
 import type { FastifyInstance } from "fastify";
 
+import { buildMonthlyAlbumManifest } from "../albums/manifest.js";
 import { config } from "../config.js";
 import { demoContext } from "../demo-context.js";
 import { prisma } from "../db.js";
 import { recallDemoMonthlyHighlights, type EnrichedRecallResult } from "../memwal/recall.js";
 import { getLocalMonthRange, getLocalMonthRangeFromParts } from "../time/month-range.js";
+import { archiveAlbumManifestToWalrus } from "../walrus/client.js";
 
 type GenerateAlbumBody = {
   targetYear?: unknown;
@@ -47,6 +49,9 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       title: album?.title ?? buildMonthlyAlbumTitle(monthRange.year, monthRange.month),
       targetYear: monthRange.year,
       targetMonth: monthRange.month,
+      manifestWalrusBlobId: album?.manifestWalrusBlobId ?? null,
+      manifestSha256: album?.manifestSha256 ?? null,
+      status: album?.status ?? "not_generated",
       memwalHighlights: await buildMonthlyMemWalHighlights(monthRange)
     });
   });
@@ -103,17 +108,60 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       return { album, viewSession };
     });
     const viewUrl = buildViewUrl(viewSession.id);
-
-    return reply.status(201).send({
-      ok: true,
+    const [memwalHighlights, careLogs] = await Promise.all([
+      buildMonthlyMemWalHighlights(monthRange),
+      prisma.careLog.findMany({
+        where: {
+          familyId: demoContext.familyId,
+          memorySpaceId: demoContext.memorySpaceId,
+          occurredAt: {
+            gte: monthRange.start,
+            lt: monthRange.end
+          }
+        },
+        orderBy: {
+          occurredAt: "asc"
+        }
+      })
+    ]);
+    const manifestArtifact = buildMonthlyAlbumManifest({
       albumId: album.id,
-      viewId: viewSession.id,
-      viewUrl,
+      familyId: album.familyId,
+      memorySpaceId: album.memorySpaceId,
       title: album.title,
       targetYear: monthRange.year,
       targetMonth: monthRange.month,
-      memwalHighlights: await buildMonthlyMemWalHighlights(monthRange),
-      reply: `${album.title}を用意しました。${viewUrl}`
+      periodStart: monthRange.start,
+      periodEnd: monthRange.end,
+      highlights: memwalHighlights.status === "ok" ? memwalHighlights.results : [],
+      careLogs
+    });
+    const walrusArtifact = await archiveAlbumManifestToWalrus(manifestArtifact);
+    const updatedAlbum = await prisma.album.update({
+      where: {
+        id: album.id
+      },
+      data: {
+        manifestSha256: manifestArtifact.sha256,
+        manifestWalrusBlobId: walrusArtifact.status === "done" ? walrusArtifact.blobId : album.manifestWalrusBlobId,
+        status: walrusArtifact.status === "done" ? "archived" : "generated"
+      }
+    });
+
+    return reply.status(201).send({
+      ok: true,
+      albumId: updatedAlbum.id,
+      viewId: viewSession.id,
+      viewUrl,
+      title: updatedAlbum.title,
+      targetYear: monthRange.year,
+      targetMonth: monthRange.month,
+      manifestWalrusBlobId: updatedAlbum.manifestWalrusBlobId,
+      manifestSha256: updatedAlbum.manifestSha256,
+      status: updatedAlbum.status,
+      memwalHighlights,
+      walrusArtifact,
+      reply: `${updatedAlbum.title}を用意しました。${viewUrl}`
     });
   });
 }

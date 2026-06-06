@@ -1,4 +1,4 @@
-import { CalendarDays, Sparkles } from "lucide-react";
+import { Archive, CalendarDays, Sparkles } from "lucide-react";
 
 import { PhotoTile, SectionHeader } from "@/components/memory-ui";
 import { SiteHeader } from "@/components/site-header";
@@ -66,6 +66,14 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
       </section>
 
       <section className="fade-up fade-up-2">
+        <ArchiveStatus
+          locale={locale}
+          manifestWalrusBlobId={monthlyAlbum.ok ? monthlyAlbum.manifestWalrusBlobId : null}
+          manifestSha256={monthlyAlbum.ok ? monthlyAlbum.manifestSha256 : null}
+        />
+      </section>
+
+      <section className="fade-up fade-up-3">
         <SectionHeader title={dictionary.milestones} />
         {highlightResults.length > 0 ? (
           <MemWalHighlights highlights={highlightResults} locale={locale} />
@@ -74,7 +82,7 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
         )}
       </section>
 
-      <section className="fade-up fade-up-3">
+      <section className="fade-up fade-up-4">
         <SectionHeader title={dictionary.monthNotes} />
         <div className="note-list">
           {demoNotes.map((note) => (
@@ -86,6 +94,36 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
         </div>
       </section>
     </main>
+  );
+}
+
+function ArchiveStatus({
+  locale,
+  manifestWalrusBlobId,
+  manifestSha256
+}: {
+  locale: Locale;
+  manifestWalrusBlobId: string | null;
+  manifestSha256: string | null;
+}) {
+  const dictionary = getDictionary(locale);
+  const proof = manifestWalrusBlobId ?? manifestSha256 ?? "pending";
+
+  return (
+    <div className="archive-card">
+      <SectionHeader
+        eyebrow={dictionary.archiveStatus}
+        title={manifestWalrusBlobId ? dictionary.walrusSaved : dictionary.walrusPending}
+      />
+      <div className="archive-rows">
+        <div className="archive-row">
+          <span className={`status-dot ${manifestWalrusBlobId ? "ok" : "demo"}`} aria-hidden="true" />
+          <Archive size={18} aria-hidden="true" />
+          <strong>{manifestWalrusBlobId ? "Walrus Blob" : dictionary.manifestHash}</strong>
+          <span className="proof">{shortenProof(proof)}</span>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -139,6 +177,14 @@ function getHighlightLabel(highlight: MonthlyAlbumHighlight, locale: Locale): st
 
   const summary = highlight.text.match(/^Summary:\s*(?<summary>.+)$/m);
   return summary?.groups?.summary ?? highlight.text;
+}
+
+function shortenProof(value: string): string {
+  if (value.length <= 18) {
+    return value;
+  }
+
+  return `${value.slice(0, 10)}...${value.slice(-6)}`;
 }
 
 function parseIntegerParam(value: string | string[] | undefined): number | undefined {

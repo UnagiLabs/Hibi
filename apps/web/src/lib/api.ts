@@ -77,6 +77,9 @@ export type MonthlyAlbumResponse =
       title: string;
       targetYear: number;
       targetMonth: number;
+      manifestWalrusBlobId: string | null;
+      manifestSha256: string | null;
+      status: string;
       memwalHighlights:
         | {
             status: "ok";

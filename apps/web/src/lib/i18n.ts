@@ -88,6 +88,8 @@ export type Dictionary = {
   archiveStatusHint: string;
   storageProof: string;
   walrusSaved: string;
+  walrusPending: string;
+  manifestHash: string;
   memwalRemembered: string;
   suiVerified: string;
   demoMode: string;
@@ -194,6 +196,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     archiveStatusHint: "Where your memories are safely kept.",
     storageProof: "Storage proof",
     walrusSaved: "Saved to Walrus",
+    walrusPending: "Manifest ready",
+    manifestHash: "Manifest hash",
     memwalRemembered: "Remembered by MemWal",
     suiVerified: "Verified on Sui",
     demoMode: "Demo mode",
@@ -305,6 +309,8 @@ const dictionaries: Record<Locale, Dictionary> = {
     archiveStatusHint: "思い出が安全に保管されている場所。",
     storageProof: "保存の証明",
     walrusSaved: "Walrusに保存済み",
+    walrusPending: "Manifest生成済み",
+    manifestHash: "Manifest hash",
     memwalRemembered: "MemWalが記憶",
     suiVerified: "Suiで検証済み",
     demoMode: "デモモード",
