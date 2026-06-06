@@ -70,6 +70,20 @@ export type MonthlyAlbumHighlight = {
     | null;
 };
 
+export type MonthlyAlbumPhoto = {
+  id: string;
+  caption: string;
+  originalName: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  walrusBlobId: string | null;
+  sha256: string | null;
+  status: string;
+  occurredAt: string;
+  createdAt: string;
+  url: string;
+};
+
 export type MonthlyAlbumResponse =
   | {
       ok: true;
@@ -80,6 +94,7 @@ export type MonthlyAlbumResponse =
       manifestWalrusBlobId: string | null;
       manifestSha256: string | null;
       status: string;
+      photos: MonthlyAlbumPhoto[];
       memwalHighlights:
         | {
             status: "ok";
@@ -159,11 +174,30 @@ export async function fetchMonthlyAlbum(params?: {
       };
     }
 
-    return data;
+    return normalizeMonthlyAlbumResponse(data, apiBaseUrl);
   } catch {
     return {
       ok: false,
       error: "Cannot connect to Hibi API."
     };
   }
+}
+
+function normalizeMonthlyAlbumResponse(
+  data: MonthlyAlbumResponse,
+  apiBaseUrl: string
+): MonthlyAlbumResponse {
+  if (!data.ok) {
+    return data;
+  }
+
+  const baseUrl = apiBaseUrl.replace(/\/$/, "");
+
+  return {
+    ...data,
+    photos: data.photos.map((photo) => ({
+      ...photo,
+      url: photo.url.startsWith("http") ? photo.url : `${baseUrl}${photo.url}`
+    }))
+  };
 }

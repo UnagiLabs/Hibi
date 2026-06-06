@@ -3,7 +3,7 @@ import { Archive, CalendarDays, Sparkles } from "lucide-react";
 import { PhotoTile, SectionHeader } from "@/components/memory-ui";
 import { SiteHeader } from "@/components/site-header";
 import { demoHighlightPhotos, demoMilestones, demoNotes } from "@/lib/demo";
-import { fetchMonthlyAlbum, type MonthlyAlbumHighlight } from "@/lib/api";
+import { fetchMonthlyAlbum, type MonthlyAlbumHighlight, type MonthlyAlbumPhoto } from "@/lib/api";
 import { getDictionary, parseLocale, type Locale } from "@/lib/i18n";
 
 type PageProps = {
@@ -30,6 +30,7 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
       : [];
   const displayYear = monthlyAlbum.ok ? monthlyAlbum.targetYear : targetYear ?? 2026;
   const displayMonth = monthlyAlbum.ok ? monthlyAlbum.targetMonth : targetMonth ?? 6;
+  const uploadedPhotos = monthlyAlbum.ok ? monthlyAlbum.photos : [];
   const monthLabel = formatMonthLabel(displayYear, displayMonth, locale);
 
   return (
@@ -46,7 +47,7 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
         </div>
         <div className="metric-strip">
           <div>
-            <strong>{demoHighlightPhotos.length}</strong>
+            <strong>{uploadedPhotos.length || demoHighlightPhotos.length}</strong>
             <span>{dictionary.highlightPhotos}</span>
           </div>
           <div>
@@ -59,9 +60,9 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
       <section className="fade-up fade-up-1">
         <SectionHeader eyebrow={dictionary.monthlyEyebrow} title={dictionary.highlightPhotos} />
         <div className="photo-grid">
-          {demoHighlightPhotos.map((photo) => (
-            <PhotoTile key={photo.id} photo={photo} locale={locale} />
-          ))}
+          {uploadedPhotos.length > 0
+            ? uploadedPhotos.map((photo) => <UploadedPhotoTile key={photo.id} photo={photo} />)
+            : demoHighlightPhotos.map((photo) => <PhotoTile key={photo.id} photo={photo} locale={locale} />)}
         </div>
       </section>
 
@@ -94,6 +95,15 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
         </div>
       </section>
     </main>
+  );
+}
+
+function UploadedPhotoTile({ photo }: { photo: MonthlyAlbumPhoto }) {
+  return (
+    <figure className="photo-tile photo-tile-image">
+      <img src={photo.url} alt={photo.caption} />
+      <figcaption className="photo-caption">{photo.caption}</figcaption>
+    </figure>
   );
 }
 

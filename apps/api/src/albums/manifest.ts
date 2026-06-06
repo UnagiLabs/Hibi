@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import type { CareLog } from "@prisma/client";
+import type { CareLog, MediaAsset } from "@prisma/client";
 
 import type { EnrichedRecallResult } from "../memwal/recall.js";
 
@@ -37,6 +37,10 @@ type AlbumManifestSection =
   | {
       type: "care_logs";
       items: AlbumManifestCareLogItem[];
+    }
+  | {
+      type: "media_assets";
+      items: AlbumManifestMediaAssetItem[];
     };
 
 type AlbumManifestHighlightItem = {
@@ -59,6 +63,17 @@ type AlbumManifestCareLogItem = {
   occurredAt: string;
 };
 
+type AlbumManifestMediaAssetItem = {
+  id: string;
+  originalName: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  walrusBlobId: string | null;
+  sha256: string | null;
+  status: string;
+  createdAt: string;
+};
+
 export function buildMonthlyAlbumManifest({
   albumId,
   familyId,
@@ -69,7 +84,8 @@ export function buildMonthlyAlbumManifest({
   periodStart,
   periodEnd,
   highlights,
-  careLogs
+  careLogs,
+  mediaAssets
 }: {
   albumId: string;
   familyId: string;
@@ -81,6 +97,7 @@ export function buildMonthlyAlbumManifest({
   periodEnd: Date;
   highlights: EnrichedRecallResult[];
   careLogs: CareLog[];
+  mediaAssets: MediaAsset[];
 }): AlbumManifestArtifact {
   const manifest: AlbumManifest = {
     schemaVersion: 1,
@@ -122,6 +139,19 @@ export function buildMonthlyAlbumManifest({
           value: careLog.value,
           sourceText: careLog.sourceText,
           occurredAt: careLog.occurredAt.toISOString()
+        }))
+      },
+      {
+        type: "media_assets",
+        items: mediaAssets.map((mediaAsset) => ({
+          id: mediaAsset.id,
+          originalName: mediaAsset.originalName,
+          mimeType: mediaAsset.mimeType,
+          sizeBytes: mediaAsset.sizeBytes,
+          walrusBlobId: mediaAsset.walrusBlobId,
+          sha256: mediaAsset.sha256,
+          status: mediaAsset.status,
+          createdAt: mediaAsset.createdAt.toISOString()
         }))
       }
     ]

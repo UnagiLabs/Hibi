@@ -30,15 +30,98 @@ type WalrusArchiveOutcome =
       epochs: number;
     };
 
+type WalrusBlobUploadOutcome =
+  | {
+      status: "disabled";
+      reason: "missing_sui_private_key";
+      sha256: string;
+      sizeBytes: number;
+    }
+  | {
+      status: "done";
+      blobId: string;
+      blobObjectId: string;
+      sha256: string;
+      sizeBytes: number;
+      network: string;
+      epochs: number;
+    }
+  | {
+      status: "failed";
+      error: string;
+      sha256: string;
+      sizeBytes: number;
+      network: string;
+      epochs: number;
+    };
+
 export async function archiveAlbumManifestToWalrus(
   artifact: AlbumManifestArtifact
 ): Promise<WalrusArchiveOutcome> {
+  return uploadBytesToWalrus({
+    bytes: artifact.bytes,
+    sha256: artifact.sha256,
+    contentType: "application/json",
+    attributes: {
+        "content-type": "application/json",
+        "hibi-kind": "album-manifest",
+        "hibi-album-id": artifact.manifest.albumId,
+        "hibi-album-type": artifact.manifest.type,
+        "hibi-manifest-sha256": artifact.sha256
+      }
+  });
+}
+
+export async function uploadMediaToWalrus({
+  bytes,
+  sha256,
+  contentType,
+  mediaAssetId
+}: {
+  bytes: Uint8Array;
+  sha256: string;
+  contentType: string;
+  mediaAssetId: string;
+}): Promise<WalrusBlobUploadOutcome> {
+  return uploadBytesToWalrus({
+    bytes,
+    sha256,
+    contentType,
+    attributes: {
+      "content-type": contentType,
+      "hibi-kind": "media-asset",
+      "hibi-media-asset-id": mediaAssetId,
+      "hibi-media-sha256": sha256
+    }
+  });
+}
+
+export async function readBlobFromWalrus(blobId: string): Promise<Uint8Array> {
+  const client = createWalrusClient();
+  return client.walrus.readBlob({
+    blobId
+  });
+}
+
+async function uploadBytesToWalrus({
+  bytes,
+  sha256,
+  contentType,
+  attributes
+}: {
+  bytes: Uint8Array;
+  sha256: string;
+  contentType: string;
+  attributes: Record<string, string>;
+}): Promise<WalrusBlobUploadOutcome> {
+  const sizeBytes = bytes.byteLength;
+
   if (!config.sui.privateKey) {
     return {
       status: "disabled",
       reason: "missing_sui_private_key",
-      sha256: artifact.sha256,
-      sizeBytes: artifact.sizeBytes
+      sha256,
+      sizeBytes
     };
   }
 
@@ -46,16 +129,13 @@ export async function archiveAlbumManifestToWalrus(
     const signer = Ed25519Keypair.fromSecretKey(config.sui.privateKey);
     const client = createWalrusClient();
     const { blobId, blobObject } = await client.walrus.writeBlob({
-      blob: artifact.bytes,
+      blob: bytes,
       deletable: false,
       epochs: config.walrus.epochs,
       signer,
       attributes: {
-        "content-type": "application/json",
-        "hibi-kind": "album-manifest",
-        "hibi-album-id": artifact.manifest.albumId,
-        "hibi-album-type": artifact.manifest.type,
-        "hibi-manifest-sha256": artifact.sha256
+        ...attributes,
+        "content-type": contentType
       }
     });
 
@@ -63,8 +143,8 @@ export async function archiveAlbumManifestToWalrus(
       status: "done",
       blobId,
       blobObjectId: blobObject.id,
-      sha256: artifact.sha256,
-      sizeBytes: artifact.sizeBytes,
+      sha256,
+      sizeBytes,
       network: config.sui.network,
       epochs: config.walrus.epochs
     };
@@ -72,8 +152,8 @@ export async function archiveAlbumManifestToWalrus(
     return {
       status: "failed",
       error: error instanceof Error ? error.message : "Unknown Walrus archive error",
-      sha256: artifact.sha256,
-      sizeBytes: artifact.sizeBytes,
+      sha256,
+      sizeBytes,
       network: config.sui.network,
       epochs: config.walrus.epochs
     };

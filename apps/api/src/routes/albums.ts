@@ -30,18 +30,22 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
     }
 
     const monthRange = parsed.monthRange;
-    const album = await prisma.album.findFirst({
-      where: {
-        familyId: demoContext.familyId,
-        memorySpaceId: demoContext.memorySpaceId,
-        type: "monthly_growth_album",
-        targetYear: monthRange.year,
-        targetMonth: monthRange.month
-      },
-      orderBy: {
-        createdAt: "desc"
-      }
-    });
+    const [album, memwalHighlights, mediaAssets] = await Promise.all([
+      prisma.album.findFirst({
+        where: {
+          familyId: demoContext.familyId,
+          memorySpaceId: demoContext.memorySpaceId,
+          type: "monthly_growth_album",
+          targetYear: monthRange.year,
+          targetMonth: monthRange.month
+        },
+        orderBy: {
+          createdAt: "desc"
+        }
+      }),
+      buildMonthlyMemWalHighlights(monthRange),
+      buildMonthlyMediaAssets(monthRange)
+    ]);
 
     return reply.send({
       ok: true,
@@ -52,7 +56,8 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       manifestWalrusBlobId: album?.manifestWalrusBlobId ?? null,
       manifestSha256: album?.manifestSha256 ?? null,
       status: album?.status ?? "not_generated",
-      memwalHighlights: await buildMonthlyMemWalHighlights(monthRange)
+      photos: mediaAssets.map(serializeMonthlyPhoto),
+      memwalHighlights
     });
   });
 
@@ -108,7 +113,7 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       return { album, viewSession };
     });
     const viewUrl = buildViewUrl(viewSession.id);
-    const [memwalHighlights, careLogs] = await Promise.all([
+    const [memwalHighlights, careLogs, mediaAssets] = await Promise.all([
       buildMonthlyMemWalHighlights(monthRange),
       prisma.careLog.findMany({
         where: {
@@ -122,7 +127,8 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
         orderBy: {
           occurredAt: "asc"
         }
-      })
+      }),
+      buildMonthlyMediaAssets(monthRange)
     ]);
     const manifestArtifact = buildMonthlyAlbumManifest({
       albumId: album.id,
@@ -134,7 +140,8 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       periodStart: monthRange.start,
       periodEnd: monthRange.end,
       highlights: memwalHighlights.status === "ok" ? memwalHighlights.results : [],
-      careLogs
+      careLogs,
+      mediaAssets
     });
     const walrusArtifact = await archiveAlbumManifestToWalrus(manifestArtifact);
     const updatedAlbum = await prisma.album.update({
@@ -159,6 +166,7 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       manifestWalrusBlobId: updatedAlbum.manifestWalrusBlobId,
       manifestSha256: updatedAlbum.manifestSha256,
       status: updatedAlbum.status,
+      photos: mediaAssets.map(serializeMonthlyPhoto),
       memwalHighlights,
       walrusArtifact,
       reply: `${updatedAlbum.title}を用意しました。${viewUrl}`
@@ -251,4 +259,67 @@ function isInMonth(result: EnrichedRecallResult, monthRange: ReturnType<typeof g
       occurredAt.getTime() >= monthRange.start.getTime() &&
       occurredAt.getTime() < monthRange.end.getTime()
   );
+}
+
+async function buildMonthlyMediaAssets(monthRange: ReturnType<typeof getLocalMonthRange>) {
+  return prisma.mediaAsset.findMany({
+    where: {
+      familyId: demoContext.familyId,
+      memorySpaceId: demoContext.memorySpaceId,
+      status: "stored",
+      OR: [
+        {
+          createdAt: {
+            gte: monthRange.start,
+            lt: monthRange.end
+          }
+        },
+        {
+          memoryItems: {
+            some: {
+              occurredAt: {
+                gte: monthRange.start,
+                lt: monthRange.end
+              }
+            }
+          }
+        }
+      ]
+    },
+    include: {
+      memoryItems: {
+        where: {
+          occurredAt: {
+            gte: monthRange.start,
+            lt: monthRange.end
+          }
+        },
+        orderBy: {
+          occurredAt: "asc"
+        },
+        take: 1
+      }
+    },
+    orderBy: {
+      createdAt: "asc"
+    }
+  });
+}
+
+function serializeMonthlyPhoto(mediaAsset: Awaited<ReturnType<typeof buildMonthlyMediaAssets>>[number]) {
+  const memoryItem = mediaAsset.memoryItems[0] ?? null;
+
+  return {
+    id: mediaAsset.id,
+    caption: memoryItem?.body ?? mediaAsset.originalName ?? "Photo",
+    originalName: mediaAsset.originalName,
+    mimeType: mediaAsset.mimeType,
+    sizeBytes: mediaAsset.sizeBytes,
+    walrusBlobId: mediaAsset.walrusBlobId,
+    sha256: mediaAsset.sha256,
+    status: mediaAsset.status,
+    occurredAt: (memoryItem?.occurredAt ?? mediaAsset.createdAt).toISOString(),
+    createdAt: mediaAsset.createdAt.toISOString(),
+    url: `/api/media/${mediaAsset.id}/blob`
+  };
 }
