@@ -14,6 +14,8 @@
 - `memwal-setup.md`: MemWal / Walrus Memoryの採用方針、staging/testnetの設定方法、必要env、namespace、health確認手順。
 - `walrus-setup.md`: 月次AlbumManifestをWalrus testnetへ保存するための設定、env、動作確認手順。
 - `sui-contracts.md`: FamilyVault、FamilyMemberSBT、AlbumRecordのSui Move設計と確認コマンド。
+- `integration-verification.md`: API / Web / MemWal / Walrus / Suiが接続済みかを確認する最終チェックリスト。
+- `pr/memwal-walrus-sui-web.md`: MemWal / Walrus / Sui / Web統合PR用の説明文。
 - `hackathon.md`: Sui Overflow 2026の提出要件、審査基準、Hibiでの勝ち筋。
 - `walrus_track.md`: Walrus trackの問題設定と評価される方向性。
 - `decisions/`: 後から変更しにくい技術判断の記録。
