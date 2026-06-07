@@ -11,6 +11,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 
+import { FamilyAccessPanel } from "@/components/family-access-panel";
 import { SiteHeader } from "@/components/site-header";
 import {
   demoArchiveStatus,
@@ -75,6 +76,8 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
         </div>
       </section>
+
+      <FamilyAccessPanel locale={locale} />
 
       <section className="fade-up fade-up-1" aria-labelledby="quick-actions-heading">
         <div className="section-header">

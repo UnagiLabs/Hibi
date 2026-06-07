@@ -1,27 +1,12 @@
 "use client";
 
 import { ConnectButton } from "@mysten/dapp-kit-react/ui";
-import { DAppKitProvider, useCurrentAccount } from "@mysten/dapp-kit-react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useCurrentAccount } from "@mysten/dapp-kit-react";
 import { ShieldCheck, Wallet } from "lucide-react";
-import { useState } from "react";
 
-import { dAppKit } from "@/lib/dapp-kit";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
 export function WalletStatus({ locale }: { locale: Locale }) {
-  const [queryClient] = useState(() => new QueryClient());
-
-  return (
-    <QueryClientProvider client={queryClient}>
-      <DAppKitProvider dAppKit={dAppKit}>
-        <WalletStatusContent locale={locale} />
-      </DAppKitProvider>
-    </QueryClientProvider>
-  );
-}
-
-function WalletStatusContent({ locale }: { locale: Locale }) {
   const account = useCurrentAccount();
   const dictionary = getDictionary(locale);
 

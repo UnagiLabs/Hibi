@@ -259,6 +259,90 @@ a {
   transform: translateY(-1px);
 }
 
+.family-access-panel {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+  margin: 28px 0 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: var(--shadow-sm);
+}
+
+.family-access-panel.verified {
+  border-color: #ccebd5;
+  background: linear-gradient(135deg, #ffffff 0%, var(--green-soft) 100%);
+}
+
+.family-access-panel.missing,
+.family-access-panel.failed,
+.family-access-panel.not_configured {
+  border-color: #f5d4dc;
+  background: linear-gradient(135deg, #ffffff 0%, var(--pink-soft) 100%);
+}
+
+.family-access-panel.checking {
+  background: linear-gradient(135deg, #ffffff 0%, var(--yellow-soft) 100%);
+}
+
+.access-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.family-access-panel.verified .access-icon {
+  color: #327f49;
+}
+
+.family-access-panel.missing .access-icon,
+.family-access-panel.failed .access-icon,
+.family-access-panel.not_configured .access-icon {
+  color: #ad5368;
+}
+
+.access-copy h2 {
+  margin-top: 4px;
+  font-size: 22px;
+}
+
+.access-copy > p:not(.eyebrow) {
+  max-width: 760px;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.access-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.access-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, 0.76);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
 /* ---------- typography & bits ---------- */
 
 h1, h2, h3, p {

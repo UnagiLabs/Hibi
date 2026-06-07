@@ -109,6 +109,7 @@ export type Dictionary = {
   walletPrompt: string;
   walletConnected: string;
   walletDemoMode: string;
+  familyAccess: string;
   comingSoon: string;
   ja: string;
   en: string;
@@ -215,6 +216,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     walletPrompt: "Connect wallet",
     walletConnected: "Connected wallet",
     walletDemoMode: "Demo mode for now. This will verify FamilyVault ownership later.",
+    familyAccess: "Family access",
     comingSoon: "Coming soon",
     ja: "日本語",
     en: "English",
@@ -328,6 +330,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     walletPrompt: "ウォレットを接続",
     walletConnected: "接続済みウォレット",
     walletDemoMode: "現在はdemo modeです。次の段階でFamilyVault確認に使います。",
+    familyAccess: "家族アクセス",
     comingSoon: "準備中",
     ja: "日本語",
     en: "English",
