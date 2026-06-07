@@ -1,19 +1,37 @@
-import { CalendarDays } from "lucide-react";
+import { Archive, CalendarDays, Sparkles } from "lucide-react";
 
 import { PhotoTile, SectionHeader } from "@/components/memory-ui";
 import { SiteHeader } from "@/components/site-header";
 import { demoHighlightPhotos, demoMilestones, demoNotes } from "@/lib/demo";
+import { fetchMonthlyAlbum, type MonthlyAlbumHighlight, type MonthlyAlbumPhoto } from "@/lib/api";
 import { getDictionary, parseLocale, type Locale } from "@/lib/i18n";
 
 type PageProps = {
-  searchParams: Promise<{ lang?: string | string[] }>;
+  searchParams: Promise<{
+    lang?: string | string[];
+    targetYear?: string | string[];
+    targetMonth?: string | string[];
+  }>;
 };
 
 export default async function MonthlyPage({ searchParams }: PageProps) {
   const query = await searchParams;
   const locale = parseLocale(query.lang);
   const dictionary = getDictionary(locale);
-  const monthLabel = locale === "ja" ? "2026年6月" : "June 2026";
+  const targetYear = parseIntegerParam(query.targetYear);
+  const targetMonth = parseIntegerParam(query.targetMonth);
+  const monthlyAlbum = await fetchMonthlyAlbum({
+    targetYear,
+    targetMonth
+  });
+  const highlightResults =
+    monthlyAlbum.ok && monthlyAlbum.memwalHighlights.status === "ok"
+      ? monthlyAlbum.memwalHighlights.results
+      : [];
+  const displayYear = monthlyAlbum.ok ? monthlyAlbum.targetYear : targetYear ?? 2026;
+  const displayMonth = monthlyAlbum.ok ? monthlyAlbum.targetMonth : targetMonth ?? 6;
+  const uploadedPhotos = monthlyAlbum.ok ? monthlyAlbum.photos : [];
+  const monthLabel = formatMonthLabel(displayYear, displayMonth, locale);
 
   return (
     <main className="shell">
@@ -29,11 +47,11 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
         </div>
         <div className="metric-strip">
           <div>
-            <strong>{demoHighlightPhotos.length}</strong>
+            <strong>{uploadedPhotos.length || demoHighlightPhotos.length}</strong>
             <span>{dictionary.highlightPhotos}</span>
           </div>
           <div>
-            <strong>{demoMilestones.length}</strong>
+            <strong>{highlightResults.length || demoMilestones.length}</strong>
             <span>{dictionary.milestones}</span>
           </div>
         </div>
@@ -42,18 +60,30 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
       <section className="fade-up fade-up-1">
         <SectionHeader eyebrow={dictionary.monthlyEyebrow} title={dictionary.highlightPhotos} />
         <div className="photo-grid">
-          {demoHighlightPhotos.map((photo) => (
-            <PhotoTile key={photo.id} photo={photo} locale={locale} />
-          ))}
+          {uploadedPhotos.length > 0
+            ? uploadedPhotos.map((photo) => <UploadedPhotoTile key={photo.id} photo={photo} />)
+            : demoHighlightPhotos.map((photo) => <PhotoTile key={photo.id} photo={photo} locale={locale} />)}
         </div>
       </section>
 
       <section className="fade-up fade-up-2">
-        <SectionHeader title={dictionary.milestones} />
-        <MilestoneChips locale={locale} />
+        <ArchiveStatus
+          locale={locale}
+          manifestWalrusBlobId={monthlyAlbum.ok ? monthlyAlbum.manifestWalrusBlobId : null}
+          manifestSha256={monthlyAlbum.ok ? monthlyAlbum.manifestSha256 : null}
+        />
       </section>
 
       <section className="fade-up fade-up-3">
+        <SectionHeader title={dictionary.milestones} />
+        {highlightResults.length > 0 ? (
+          <MemWalHighlights highlights={highlightResults} locale={locale} />
+        ) : (
+          <MilestoneChips locale={locale} />
+        )}
+      </section>
+
+      <section className="fade-up fade-up-4">
         <SectionHeader title={dictionary.monthNotes} />
         <div className="note-list">
           {demoNotes.map((note) => (
@@ -65,6 +95,67 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
         </div>
       </section>
     </main>
+  );
+}
+
+function UploadedPhotoTile({ photo }: { photo: MonthlyAlbumPhoto }) {
+  return (
+    <figure className="photo-tile photo-tile-image">
+      <img src={photo.url} alt={photo.caption} />
+      <figcaption className="photo-caption">{photo.caption}</figcaption>
+    </figure>
+  );
+}
+
+function ArchiveStatus({
+  locale,
+  manifestWalrusBlobId,
+  manifestSha256
+}: {
+  locale: Locale;
+  manifestWalrusBlobId: string | null;
+  manifestSha256: string | null;
+}) {
+  const dictionary = getDictionary(locale);
+  const proof = manifestWalrusBlobId ?? manifestSha256 ?? "pending";
+
+  return (
+    <div className="archive-card">
+      <SectionHeader
+        eyebrow={dictionary.archiveStatus}
+        title={manifestWalrusBlobId ? dictionary.walrusSaved : dictionary.walrusPending}
+      />
+      <div className="archive-rows">
+        <div className="archive-row">
+          <span className={`status-dot ${manifestWalrusBlobId ? "ok" : "demo"}`} aria-hidden="true" />
+          <Archive size={18} aria-hidden="true" />
+          <strong>{manifestWalrusBlobId ? "Walrus Blob" : dictionary.manifestHash}</strong>
+          <span className="proof">{shortenProof(proof)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MemWalHighlights({
+  highlights,
+  locale
+}: {
+  highlights: MonthlyAlbumHighlight[];
+  locale: Locale;
+}) {
+  return (
+    <div className="note-list">
+      {highlights.map((highlight) => (
+        <div className="note-card" key={highlight.blobId}>
+          <span className="note-date">
+            <Sparkles size={14} aria-hidden="true" />
+            MemWal
+          </span>
+          <p>{getHighlightLabel(highlight, locale)}</p>
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -81,4 +172,48 @@ function MilestoneChips({ locale }: { locale: Locale }) {
       ))}
     </div>
   );
+}
+
+function getHighlightLabel(highlight: MonthlyAlbumHighlight, locale: Locale): string {
+  if (highlight.source?.type === "memory_item") {
+    return highlight.source.body;
+  }
+
+  if (highlight.source?.type === "care_log") {
+    return locale === "ja"
+      ? `${highlight.source.sourceText} を思い出として見つけました`
+      : `Found care memory: ${highlight.source.sourceText}`;
+  }
+
+  const summary = highlight.text.match(/^Summary:\s*(?<summary>.+)$/m);
+  return summary?.groups?.summary ?? highlight.text;
+}
+
+function shortenProof(value: string): string {
+  if (value.length <= 18) {
+    return value;
+  }
+
+  return `${value.slice(0, 10)}...${value.slice(-6)}`;
+}
+
+function parseIntegerParam(value: string | string[] | undefined): number | undefined {
+  const raw = Array.isArray(value) ? value[0] : value;
+
+  if (!raw || !/^\d+$/.test(raw)) {
+    return undefined;
+  }
+
+  return Number.parseInt(raw, 10);
+}
+
+function formatMonthLabel(year: number, month: number, locale: Locale): string {
+  if (locale === "ja") {
+    return `${year}年${month}月`;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric"
+  }).format(new Date(year, month - 1, 1));
 }

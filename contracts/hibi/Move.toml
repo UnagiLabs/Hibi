@@ -1,0 +1,14 @@
+[package]
+name = "hibi_contracts"
+edition = "2024.beta"
+license = "MIT"
+authors = ["Hibi contributors"]
+
+[dependencies]
+
+[addresses]
+hibi_contracts = "0x0"
+
+[dev-dependencies]
+
+[dev-addresses]

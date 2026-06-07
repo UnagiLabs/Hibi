@@ -5,6 +5,7 @@ import { config } from "../config.js";
 import { demoContext } from "../demo-context.js";
 import { prisma } from "../db.js";
 import { parseMessageWithRules } from "../intent/rule-parser.js";
+import { rememberCareLog, rememberMemoryItem } from "../memwal/remember.js";
 import { getLocalDayRange } from "../time/day-range.js";
 
 const messageValidator = createMessageValidator();
@@ -91,6 +92,7 @@ export async function registerMessageRoutes(server: FastifyInstance) {
         return { careLog, viewSession };
       });
       const viewUrl = buildViewUrl(viewSession.id);
+      const memwal = await rememberCareLog(careLog);
 
       return reply.status(201).send({
         ok: true,
@@ -104,6 +106,7 @@ export async function registerMessageRoutes(server: FastifyInstance) {
         occurredAt: validatedResult.occurredAt.toISOString(),
         rangeStart: dayRange.start.toISOString(),
         rangeEnd: dayRange.end.toISOString(),
+        memwal,
         reply: buildCareLogReply(
           validatedResult.category,
           validatedResult.amount,
@@ -124,6 +127,7 @@ export async function registerMessageRoutes(server: FastifyInstance) {
         occurredAt: validatedResult.occurredAt
       }
     });
+    const memwal = await rememberMemoryItem(memoryItem);
 
     return reply.status(201).send({
       ok: true,
@@ -131,6 +135,7 @@ export async function registerMessageRoutes(server: FastifyInstance) {
       intent: validatedResult.intent,
       confidence: validatedResult.confidence,
       validator: validatedResult.source,
+      memwal,
       reply: "メッセージを保存しました。"
     });
   });

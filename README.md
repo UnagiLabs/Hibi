@@ -40,7 +40,14 @@ scripts/               Local development and maintenance scripts
 
 ## Current Status
 
-This repository is at the planning and scaffold stage. Implementation choices should follow the MVP phases in `docs/roadmap.md`.
+The local MVP path is implemented for the Hibi API and Web app:
+
+- Natural-language memory input is saved to SQLite and remembered by MemWal.
+- Photos and monthly AlbumManifest artifacts can be stored on Walrus testnet.
+- AlbumManifest blob IDs and hashes are recorded in the Sui testnet `FamilyVault`.
+- The Web app can connect a Sui wallet and verify the demo `FamilyMemberSBT`.
+
+OpenClaw packaging and production multi-family auth are still future phases.
 
 ## Development
 
@@ -111,5 +118,7 @@ Open the returned `viewUrl` to see the album page.
 Wallet connection:
 
 - The web view includes a Sui wallet connection panel.
-- Current behavior is demo mode only: connected wallet address is displayed, but FamilyVault ownership is not enforced yet.
-- Sui FamilyVault verification will be added in a later phase.
+- The connected wallet is checked for the demo `FamilyMemberSBT` on Sui testnet.
+- When the wallet owns the SBT for the demo `FamilyVault`, the home page shows verified family access.
+
+Full integration verification steps are in [Integration verification](docs/integration-verification.md).
