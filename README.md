@@ -37,6 +37,7 @@ scripts/               Local development and maintenance scripts
 - [Product spec](docs/product-spec.md)
 - [Architecture](docs/architecture.md)
 - [Roadmap](docs/roadmap.md)
+- [OpenClaw plugin](docs/openclaw-plugin.md)
 
 ## Current Status
 

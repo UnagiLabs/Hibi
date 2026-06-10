@@ -1,0 +1,30 @@
+{
+  "id": "hibi",
+  "name": "Hibi",
+  "description": "Chat-first family memory tools backed by Hibi API, MemWal, Walrus, and Sui.",
+  "version": "0.1.0",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "apiBaseUrl": {
+        "type": "string",
+        "description": "Base URL for the Hibi API.",
+        "default": "http://127.0.0.1:4000"
+      }
+    },
+    "additionalProperties": false
+  },
+  "activation": {
+    "onStartup": false,
+    "onCapabilities": [
+      "tool"
+    ]
+  },
+  "contracts": {
+    "tools": [
+      "hibi_remember_text",
+      "hibi_recall_memory",
+      "hibi_generate_monthly_album"
+    ]
+  }
+}

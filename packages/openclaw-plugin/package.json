@@ -1,0 +1,36 @@
+{
+  "name": "@hibi/openclaw-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenClaw tools for the Hibi family memory agent.",
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "plugin:metadata": "openclaw plugins build --root . --entry ./dist/index.js",
+    "plugin:validate": "pnpm build && openclaw plugins build --root . --entry ./dist/index.js && openclaw plugins validate --root . --entry ./dist/index.js"
+  },
+  "dependencies": {
+    "typebox": "^1.2.2"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.5.17"
+  },
+  "devDependencies": {
+    "openclaw": "^2026.6.1",
+    "typescript": "^5.7.2"
+  },
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ],
+    "compat": {
+      "pluginApi": ">=2026.5.17"
+    }
+  }
+}
