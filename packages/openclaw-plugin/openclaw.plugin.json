@@ -24,6 +24,7 @@
     "tools": [
       "hibi_remember_text",
       "hibi_recall_memory",
+      "hibi_upload_photo",
       "hibi_generate_monthly_album"
     ]
   }

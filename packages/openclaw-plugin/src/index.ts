@@ -87,6 +87,63 @@ export default defineToolPlugin({
       }
     }),
     tool({
+      name: "hibi_upload_photo",
+      label: "Upload Hibi Photo",
+      description:
+        "Save a family photo to Hibi. Hibi API stores the image on Walrus, creates media metadata, and remembers the caption in MemWal when provided.",
+      parameters: Type.Object({
+        imageBase64: Type.String({
+          description:
+            "Base64-encoded image bytes. A data URL such as data:image/jpeg;base64,... is also accepted."
+        }),
+        filename: Type.String({
+          description: "Original filename, for example 'first-rollover.jpg'."
+        }),
+        mimeType: Type.String({
+          description: "Image MIME type, for example 'image/jpeg' or 'image/png'."
+        }),
+        caption: Type.Optional(
+          Type.String({
+            description: "Optional caption or memory note to save with the photo."
+          })
+        ),
+        occurredAt: Type.Optional(
+          Type.String({
+            description: "Optional ISO datetime for when the photo memory happened."
+          })
+        )
+      }),
+      async execute({ imageBase64, filename, mimeType, caption, occurredAt }, config: HibiPluginConfig, context) {
+        context.signal?.throwIfAborted();
+        const client = new HibiClient(config);
+        const result = await client.uploadPhoto(
+          {
+            imageBase64,
+            filename,
+            mimeType,
+            caption,
+            occurredAt
+          },
+          {
+            signal: context.signal
+          }
+        );
+
+        return {
+          ok: result.ok,
+          mediaAssetId: result.mediaAsset?.id,
+          mediaAssetUrl: result.mediaAsset?.url,
+          mediaAssetStatus: result.mediaAsset?.status,
+          mediaAssetWalrusBlobId: result.mediaAsset?.walrusBlobId,
+          memoryItemId: result.memoryItemId,
+          walrusStatus: result.walrus?.status,
+          walrusBlobId: result.walrus?.blobId,
+          memwalStatus: result.memwal?.status,
+          memwalBlobId: result.memwal?.blobId
+        };
+      }
+    }),
+    tool({
       name: "hibi_generate_monthly_album",
       label: "Generate Hibi Monthly Album",
       description:

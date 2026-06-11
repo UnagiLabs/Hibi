@@ -32,9 +32,11 @@ OpenClawのtool plugin仕様に合わせて、runtime entryは `defineToolPlugin
 | --- | --- | --- |
 | `hibi_remember_text` | `POST /api/messages` | 育児ログや思い出を保存する |
 | `hibi_recall_memory` | `POST /api/recall` | MemWalから思い出をrecallする |
+| `hibi_upload_photo` | `POST /api/photos` | 写真をWalrusへ保存し、captionをMemWalに記録する |
 | `hibi_generate_monthly_album` | `POST /api/albums/generate` | 月次アルバムを作成し、Walrus保存とSui記録を行う |
 
-写真添付は次フェーズで `hibi_upload_photo` として追加する。
+`hibi_upload_photo` は `imageBase64`、`filename`、`mimeType`、任意の `caption` / `occurredAt` を受け取る。
+`imageBase64` は純粋なbase64文字列と `data:image/...;base64,...` 形式の両方に対応する。
 
 ## Config
 
@@ -95,6 +97,12 @@ Hibi API: DB保存 + MemWal remember + viewUrl返却
 ユーザー: 最近できるようになったことは？
 OpenClaw model: hibi_recall_memory を呼ぶ
 Hibi API: MemWal recall結果を返す
+```
+
+```text
+ユーザー: この写真、はじめて寝返りした！ + photo
+OpenClaw model: hibi_upload_photo を呼ぶ
+Hibi API: 写真をWalrusへ保存し、captionがあればMemWalへrememberする
 ```
 
 ```text

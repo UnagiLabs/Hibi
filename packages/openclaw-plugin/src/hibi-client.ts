@@ -56,6 +56,43 @@ export type GenerateMonthlyAlbumResponse = {
   error?: string;
 };
 
+export type UploadPhotoInput = {
+  imageBase64: string;
+  filename: string;
+  mimeType: string;
+  caption?: string;
+  occurredAt?: string;
+};
+
+export type UploadPhotoResponse = {
+  ok: boolean;
+  mediaAsset?: {
+    id: string;
+    originalName: string | null;
+    mimeType: string | null;
+    sizeBytes: number | null;
+    walrusBlobId: string | null;
+    sha256: string | null;
+    status: string;
+    createdAt: string;
+    url: string | null;
+  };
+  memoryItemId?: string | null;
+  walrus?: {
+    status: string;
+    blobId?: string;
+    blobObjectId?: string;
+    error?: string;
+  };
+  memwal?: {
+    status: string;
+    blobId?: string;
+    namespace?: string;
+    error?: string;
+  } | null;
+  error?: string;
+};
+
 export class HibiClient {
   readonly #apiBaseUrl: string;
 
@@ -81,6 +118,24 @@ export class HibiClient {
     return this.#post("/api/albums/generate", input, options);
   }
 
+  uploadPhoto(input: UploadPhotoInput, options: HibiRequestOptions = {}): Promise<UploadPhotoResponse> {
+    const form = new FormData();
+    const bytes = decodeBase64Image(input.imageBase64);
+    const photo = new Blob([bytes], {
+      type: input.mimeType
+    });
+
+    if (input.caption) {
+      form.set("caption", input.caption);
+    }
+    if (input.occurredAt) {
+      form.set("occurredAt", input.occurredAt);
+    }
+    form.set("file", photo, input.filename);
+
+    return this.#postForm("/api/photos", form, options);
+  }
+
   async #post<T>(path: string, body: unknown, options: HibiRequestOptions): Promise<T> {
     const response = await fetch(`${this.#apiBaseUrl}${path}`, {
       method: "POST",
@@ -101,4 +156,29 @@ export class HibiClient {
 
     return payload;
   }
+
+  async #postForm<T>(path: string, form: FormData, options: HibiRequestOptions): Promise<T> {
+    const response = await fetch(`${this.#apiBaseUrl}${path}`, {
+      method: "POST",
+      body: form,
+      signal: options.signal
+    });
+    const payload = (await response.json()) as T;
+
+    if (!response.ok) {
+      const message = typeof payload === "object" && payload && "error" in payload
+        ? String(payload.error)
+        : `Hibi API request failed with ${response.status}`;
+      throw new Error(message);
+    }
+
+    return payload;
+  }
+}
+
+function decodeBase64Image(value: string): Uint8Array {
+  const [, maybeDataUrlPayload] = value.match(/^data:[^;]+;base64,(.*)$/s) ?? [];
+  const base64 = maybeDataUrlPayload ?? value;
+
+  return Buffer.from(base64, "base64");
 }

@@ -15,9 +15,10 @@ The plugin stays thin:
 | --- | --- | --- |
 | `hibi_remember_text` | `POST /api/messages` | Save a care log or memory text |
 | `hibi_recall_memory` | `POST /api/recall` | Recall memories from MemWal |
+| `hibi_upload_photo` | `POST /api/photos` | Save a photo to Walrus and remember its caption |
 | `hibi_generate_monthly_album` | `POST /api/albums/generate` | Generate a monthly album, archive to Walrus, record on Sui |
 
-Photo attachment support is intentionally left for the next phase.
+Photo uploads accept base64-encoded image bytes, including `data:image/...;base64,...` URLs.
 
 ## Config
 
@@ -55,6 +56,12 @@ Hibi: saves DB + MemWal and returns a view URL
 User: 最近できるようになったことは？
 OpenClaw model: call hibi_recall_memory
 Hibi: returns MemWal recall results
+```
+
+```text
+User: この写真、はじめて寝返りした！ + photo
+OpenClaw model: call hibi_upload_photo with imageBase64, filename, mimeType, and caption
+Hibi: stores the photo on Walrus, saves metadata, and remembers the caption in MemWal
 ```
 
 ```text
