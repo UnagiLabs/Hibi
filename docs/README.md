@@ -12,6 +12,7 @@
 - `memory-views-spec.md`: チャットから閲覧URLを返すMemory View、写真ギャラリー、月次/年次成長アルバム、Webアプリ、URL安全設計の完全仕様。
 - `web-ui-blueprint.md`: Hibi Webアプリの画面構成、UIコンポーネント、月次/年次ハイライト、On This Dayの設計図。
 - `openclaw-plugin.md`: OpenClaw pluginの役割、tool構成、設定、検証手順。
+- `openclaw-telegram-setup.md`: TelegramからOpenClaw経由でHibiを操作する実機構成、確認済み状態、簡単セットアップ化の方針。
 - `memwal-setup.md`: MemWal / Walrus Memoryの採用方針、staging/testnetの設定方法、必要env、namespace、health確認手順。
 - `walrus-setup.md`: 月次AlbumManifestをWalrus testnetへ保存するための設定、env、動作確認手順。
 - `sui-contracts.md`: FamilyVault、FamilyMemberSBT、AlbumRecordのSui Move設計と確認コマンド。

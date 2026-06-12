@@ -2,6 +2,8 @@
 
 HibiのMemWal / Walrus / Sui / Web統合が動いているかを確認する手順。
 
+TelegramからOpenClaw経由でHibiを操作する確認は `openclaw-telegram-setup.md` も併用する。
+
 ## 前提
 
 `apps/api/.env` に以下が入っていること。
@@ -138,6 +140,43 @@ http://localhost:3000
 - Sui testnetのウォレットを接続できる
 - demo `FamilyMemberSBT` を持つウォレットなら `Family access verified` が表示される
 - SBTを持たないウォレットなら `No Hibi Family Pass found` が表示される
+
+## 7. OpenClaw plugin runtime
+
+```sh
+openclaw plugins inspect hibi --runtime --json | grep -E 'status|activated|hibi_'
+```
+
+合格条件:
+
+- `activated` が `true`
+- `status` が `loaded`
+- `hibi_remember_text` が表示される
+- `hibi_recall_memory` が表示される
+- `hibi_upload_photo` が表示される
+- `hibi_generate_monthly_album` が表示される
+
+Hibi APIの接続先を明示する場合:
+
+```sh
+openclaw config set 'plugins.entries.hibi.config.apiBaseUrl' 'http://127.0.0.1:4000'
+openclaw gateway restart
+```
+
+## 8. Telegram smoke test
+
+Telegram channel設定後、Telegramから以下を送る。
+
+```text
+ミルク120ml飲んだ
+```
+
+合格条件:
+
+- OpenClawがHibi pluginのtoolを呼ぶ
+- Hibi API logに `POST /api/messages` 相当の保存が出る
+- 返答にview URLが含まれる
+- Hibi API側の保存結果で `memwal.status=done` を確認できる
 
 ## 2026-06-06検証メモ
 
