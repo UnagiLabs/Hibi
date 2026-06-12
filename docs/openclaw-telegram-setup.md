@@ -87,6 +87,21 @@ openclaw plugins inspect hibi --runtime --json | grep -E 'status|activated|hibi_
 
 ## Hibi API確認
 
+簡単セットアップ用スクリプトを使う場合:
+
+```sh
+cd ~/src/Hibi
+./scripts/setup-hibi-api.sh
+```
+
+このスクリプトは次を確認・実行する。
+
+- `node` / `pnpm` / `sqlite3` の存在確認
+- `apps/api/.env` がなければ `apps/api/.env.example` から作成
+- `pnpm install`
+- `pnpm db:migrate`
+- API起動コマンドと確認用curlの表示
+
 Hibi APIを起動する。
 
 ```sh
@@ -228,7 +243,7 @@ Telegram channel設定後、以下の文を実機で送る。
 
 | 予定スクリプト | 目的 |
 | --- | --- |
-| `scripts/setup-hibi-api.sh` | 依存関係、`.env`、SQLite、migration、API疎通確認をまとめる。 |
+| `scripts/setup-hibi-api.sh` | 依存関係、`.env`、SQLite、migration、API疎通確認をまとめる。実装済み。 |
 | `scripts/install-openclaw-plugin.sh` | plugin build、install用フォルダ作成、npm install、OpenClaw登録、config設定、gateway restartをまとめる。実装済み。 |
 | `scripts/verify-openclaw-hibi.sh` | OpenClaw plugin loaded状態、Hibi API疎通、tool一覧を確認する。 |
 
@@ -237,7 +252,7 @@ Telegram channel設定後、以下の文を実機で送る。
 1. OpenClaw Telegram channelの現設定を確認する。
 2. Telegram bot tokenとallowFromの設定手順を文書化する。
 3. `scripts/install-openclaw-plugin.sh` をsurfaceで実行して再現確認する。
-4. `scripts/setup-hibi-api.sh` を追加する。
+4. `scripts/setup-hibi-api.sh` をsurfaceで実行して再現確認する。
 5. Telegramから `hibi_remember_text` を呼べることを実機確認する。
 6. 写真添付が `hibi_upload_photo` へ渡るかを確認する。
 
