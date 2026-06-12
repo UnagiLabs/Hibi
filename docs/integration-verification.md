@@ -163,7 +163,23 @@ openclaw config set 'plugins.entries.hibi.config.apiBaseUrl' 'http://127.0.0.1:4
 openclaw gateway restart
 ```
 
-## 8. Telegram smoke test
+## 8. Telegram channel
+
+```sh
+openclaw gateway status
+openclaw channels status --probe
+openclaw plugins inspect telegram --runtime --json | grep -E 'status|activated'
+```
+
+合格条件:
+
+- OpenClaw gatewayがrunning
+- Telegram bot tokenが設定済み
+- `dmPolicy` が `pairing`
+- 初回DMを `openclaw pairing approve telegram <CODE>` で承認済み
+- Telegram pluginがloaded
+
+## 9. Telegram smoke test
 
 Telegram channel設定後、Telegramから以下を送る。
 

@@ -89,6 +89,106 @@ curl -X POST http://127.0.0.1:4000/api/messages \
 - `memwal.status` が `done`
 - `reply` にview URLが含まれる
 
+## Telegram channel設定
+
+OpenClaw Telegram channelは、Telegram Bot API tokenを使ってOpenClaw gatewayにmessageを届ける。OpenClaw公式ではlong pollingがdefaultで、webhookは任意。
+
+### 1. BotFatherでbot tokenを作る
+
+Telegramで `@BotFather` を開く。
+
+```text
+/newbot
+```
+
+BotFatherの案内に従ってbot名とusernameを決め、最後に表示されるtokenを保存する。
+
+```text
+123456789:AA...
+```
+
+このtokenは秘密情報なのでGit管理ファイルに書かない。
+
+### 2. OpenClawにTelegram tokenを設定する
+
+surface上で実行する。
+
+```sh
+openclaw config set 'channels.telegram.enabled' true
+openclaw config set 'channels.telegram.botToken' '<TELEGRAM_BOT_TOKEN>'
+openclaw config set 'channels.telegram.dmPolicy' 'pairing'
+openclaw config set 'channels.telegram.groups.*.requireMention' true
+openclaw gateway restart
+```
+
+`<TELEGRAM_BOT_TOKEN>` はBotFatherから受け取ったtokenに置き換える。
+
+tokenをconfigに直接置きたくない場合は、default accountに限り `TELEGRAM_BOT_TOKEN` env fallbackを使える。ただしsystemd serviceでgatewayを動かす場合は、service環境変数へ渡す必要があるため、初心者向け手順ではまず `openclaw config set` を使う。
+
+### 3. 最初のDMをpairingする
+
+Telegramで作成したbotへDMを送る。
+
+```text
+/start
+```
+
+または:
+
+```text
+ミルク120ml飲んだ
+```
+
+OpenClaw側でpairing codeを確認する。
+
+```sh
+openclaw pairing list telegram
+```
+
+表示されたcodeを承認する。
+
+```sh
+openclaw pairing approve telegram <CODE>
+```
+
+pairing codeは期限があるため、期限切れの場合はTelegramからもう一度botへmessageを送って再発行する。
+
+### 4. allowFromを確認する
+
+`dmPolicy=pairing` の場合、承認済みユーザーはOpenClawのcredentials storeに保存される。設定ファイルに固定したい場合はTelegram user IDを `tg:` prefix付きで入れる。
+
+```sh
+openclaw config set 'channels.telegram.allowFrom' '["tg:123456789"]'
+openclaw gateway restart
+```
+
+通常はpairing approveで十分。公開botとして誰でも使えるようにする設定は避ける。
+
+### 5. Telegram channel状態を確認する
+
+```sh
+openclaw gateway status
+openclaw channels status --probe
+openclaw plugins inspect telegram --runtime --json | grep -E 'status|activated'
+```
+
+合格条件:
+
+- gatewayがrunning
+- Telegram channelがconfiguredまたはhealthy
+- Telegram pluginがloaded
+
+### 6. groupで使う場合
+
+まずDMで動作確認してからgroupへ入れる。groupでは誤反応を避けるため、defaultでmention必須にする。
+
+```sh
+openclaw config set 'channels.telegram.groups.*.requireMention' true
+openclaw gateway restart
+```
+
+group chat IDは `openclaw logs --follow`、Bot API `getUpdates`、またはID確認botで取得する。Telegram supergroup IDは `-100...` で始まることが多く、`channels.telegram.groups` のkeyとして扱う。
+
 ## Telegramで確認する操作
 
 Telegram channel設定後、以下の文を実機で送る。
@@ -120,3 +220,10 @@ Telegram channel設定後、以下の文を実機で送る。
 4. `scripts/setup-hibi-api.sh` を追加する。
 5. Telegramから `hibi_remember_text` を呼べることを実機確認する。
 6. 写真添付が `hibi_upload_photo` へ渡るかを確認する。
+
+## 参考
+
+- OpenClaw Telegram channel: https://docs.openclaw.ai/channels/telegram
+- OpenClaw channel config: https://docs.openclaw.ai/gateway/config-channels
+- OpenClaw channel CLI: https://docs.openclaw.ai/cli/channels
+- OpenClaw security / allowFrom: https://docs.openclaw.ai/gateway/security
