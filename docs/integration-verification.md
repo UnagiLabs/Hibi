@@ -143,6 +143,14 @@ http://localhost:3000
 
 ## 7. OpenClaw plugin runtime
 
+簡易確認:
+
+```sh
+./scripts/verify-openclaw-hibi.sh
+```
+
+手動確認:
+
 ```sh
 openclaw plugins inspect hibi --runtime --json | grep -E 'status|activated|hibi_'
 ```
@@ -184,7 +192,7 @@ openclaw plugins inspect telegram --runtime --json | grep -E 'status|activated'
 Telegram channel設定後、Telegramから以下を送る。
 
 ```text
-ミルク120ml飲んだ
+Hibiに記録して。ミルク120ml飲んだ
 ```
 
 合格条件:

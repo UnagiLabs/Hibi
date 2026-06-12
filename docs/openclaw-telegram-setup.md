@@ -128,7 +128,56 @@ curl -X POST http://127.0.0.1:4000/api/messages \
 
 OpenClaw Telegram channelは、Telegram Bot API tokenを使ってOpenClaw gatewayにmessageを届ける。OpenClaw公式ではlong pollingがdefaultで、webhookは任意。
 
+## 既存Telegram botをHibi用に使う
+
+すでにOpenClawでTelegram botを使っている場合、新しいbotを作らずに既存botをHibi用に寄せて使える。
+
+この場合、BotFather側では何もしない。
+
+- bot名は変えない
+- tokenは再発行しない
+- Telegram履歴は消さない
+- OpenClawのTelegram channel設定は既存のまま使う
+
+必要なのは、Hibi APIとHibi pluginが動いていることを確認し、OpenClaw agentにHibiとして振る舞う指示を与えること。
+
+```sh
+cd ~/src/Hibi
+./scripts/verify-openclaw-hibi.sh
+```
+
+合格したら、既存Telegram botへ最初に以下を送る。
+
+```text
+これからあなたはHibiの家族記憶エージェントとして動いてください。
+育児ログ、家族の思い出、写真、月次アルバムに関する依頼はHibi toolを使ってください。
+保存、検索、写真保存、アルバム生成では、hibi_remember_text、hibi_recall_memory、hibi_upload_photo、hibi_generate_monthly_albumを優先してください。
+返答では、保存できた内容とHibiのview URLを短く伝えてください。
+```
+
+その後、Hibi用だと分かりやすい形で送る。
+
+```text
+Hibiに記録して。ミルク120ml飲んだ
+```
+
+期待する流れ:
+
+```text
+既存Telegram bot
+  -> OpenClaw Telegram channel
+  -> OpenClaw agent
+  -> hibi_remember_text
+  -> Hibi API POST /api/messages
+  -> MemWal remember
+  -> Telegramへ返信
+```
+
+既存botが普段のOpenClaw用途と混ざる場合は、しばらく `Hibiに記録して。` や `Hibiで思い出して。` のprefixを付ける。
+
 ### 1. BotFatherでbot tokenを作る
+
+新しいHibi専用botを作る場合だけ、この手順を行う。既存botを使う場合は不要。
 
 Telegramで `@BotFather` を開く。
 
@@ -230,10 +279,10 @@ Telegram channel設定後、以下の文を実機で送る。
 
 | Telegram入力 | 期待されるtool | Hibi API |
 | --- | --- | --- |
-| `ミルク120ml飲んだ` | `hibi_remember_text` | `POST /api/messages` |
-| `最近できるようになったことは？` | `hibi_recall_memory` | `POST /api/recall` |
-| `今月の成長アルバム見せて` | `hibi_generate_monthly_album` | `POST /api/albums/generate` |
-| `この写真、はじめて寝返りした！` + 写真 | `hibi_upload_photo` | `POST /api/photos` |
+| `Hibiに記録して。ミルク120ml飲んだ` | `hibi_remember_text` | `POST /api/messages` |
+| `Hibiで思い出して。最近できるようになったことは？` | `hibi_recall_memory` | `POST /api/recall` |
+| `Hibiで今月の成長アルバムを作って` | `hibi_generate_monthly_album` | `POST /api/albums/generate` |
+| `Hibiに写真を保存して。この写真、はじめて寝返りした！` + 写真 | `hibi_upload_photo` | `POST /api/photos` |
 
 写真添付は、OpenClaw Telegram channelが写真をtool inputの `imageBase64` / `filename` / `mimeType` へ渡せるかを実機で確認する。渡せない場合は、Telegram添付をHibi API用base64へ変換する小さなbridgeを次ステップで検討する。
 
@@ -245,7 +294,7 @@ Telegram channel設定後、以下の文を実機で送る。
 | --- | --- |
 | `scripts/setup-hibi-api.sh` | 依存関係、`.env`、SQLite、migration、API疎通確認をまとめる。実装済み。 |
 | `scripts/install-openclaw-plugin.sh` | plugin build、install用フォルダ作成、npm install、OpenClaw登録、config設定、gateway restartをまとめる。実装済み。 |
-| `scripts/verify-openclaw-hibi.sh` | OpenClaw plugin loaded状態、Hibi API疎通、tool一覧を確認する。 |
+| `scripts/verify-openclaw-hibi.sh` | OpenClaw plugin loaded状態、Hibi API疎通、tool一覧を確認する。実装済み。 |
 
 ## 次の実装ステップ
 
@@ -253,8 +302,9 @@ Telegram channel設定後、以下の文を実機で送る。
 2. Telegram bot tokenとallowFromの設定手順を文書化する。
 3. `scripts/install-openclaw-plugin.sh` をsurfaceで実行して再現確認する。
 4. `scripts/setup-hibi-api.sh` をsurfaceで実行して再現確認する。
-5. Telegramから `hibi_remember_text` を呼べることを実機確認する。
-6. 写真添付が `hibi_upload_photo` へ渡るかを確認する。
+5. `scripts/verify-openclaw-hibi.sh` をsurfaceで実行して再現確認する。
+6. 既存Telegram botから `hibi_remember_text` を呼べることを実機確認する。
+7. 写真添付が `hibi_upload_photo` へ渡るかを確認する。
 
 ## 参考
 
