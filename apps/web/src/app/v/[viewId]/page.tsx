@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 
 import { SiteHeader } from "@/components/site-header";
-import type { CareLog } from "@/lib/api";
+import type { CareLog, MediaAssetPhoto } from "@/lib/api";
 import { fetchMemoryView } from "@/lib/api";
 import { formatCareLogValue, formatDateRange, formatMonthRange, formatTime } from "@/lib/format";
 import { getDictionary, parseLocale, withLocale, type Locale } from "@/lib/i18n";
@@ -105,6 +105,7 @@ function AlbumView({
   const dictionary = getDictionary(locale);
   const highlights = buildHighlights(response.careLogs, locale);
   const title = response.album?.title ?? dictionary.monthlyAlbum;
+  const photos = response.photos ?? [];
 
   return (
     <section className="album-layout">
@@ -126,10 +127,18 @@ function AlbumView({
             <span>{dictionary.monthHighlights}</span>
           </div>
         </div>
-        <div className="photo-placeholder">
-          <Images size={34} aria-hidden="true" />
-          <span>{dictionary.photosComingSoon}</span>
-        </div>
+        {photos.length > 0 ? (
+          <div className="photo-grid album-photo-grid">
+            {photos.slice(0, 6).map((photo) => (
+              <UploadedPhotoTile key={photo.id} photo={photo} locale={locale} />
+            ))}
+          </div>
+        ) : (
+          <div className="photo-placeholder">
+            <Images size={34} aria-hidden="true" />
+            <span>{dictionary.photosComingSoon}</span>
+          </div>
+        )}
       </div>
 
       <section className="timeline-panel" aria-labelledby="album-heading">
@@ -153,6 +162,15 @@ function AlbumView({
         <TimelinePanel careLogs={response.careLogs.slice(0, 8)} locale={locale} compact />
       </section>
     </section>
+  );
+}
+
+function UploadedPhotoTile({ photo, locale }: { photo: MediaAssetPhoto; locale: Locale }) {
+  return (
+    <Link className="photo-tile photo-tile-image" href={withLocale(`/albums/photos/${photo.id}`, locale)}>
+      <img src={photo.url} alt={photo.caption} />
+      <span className="photo-caption">{photo.caption}</span>
+    </Link>
   );
 }
 

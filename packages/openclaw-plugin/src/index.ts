@@ -133,6 +133,7 @@ export default defineToolPlugin({
           ok: result.ok,
           mediaAssetId: result.mediaAsset?.id,
           mediaAssetUrl: result.mediaAsset?.url,
+          mediaAssetPageUrl: result.mediaAsset?.pageUrl,
           mediaAssetStatus: result.mediaAsset?.status,
           mediaAssetWalrusBlobId: result.mediaAsset?.walrusBlobId,
           memoryItemId: result.memoryItemId,
@@ -140,6 +141,25 @@ export default defineToolPlugin({
           walrusBlobId: result.walrus?.blobId,
           memwalStatus: result.memwal?.status,
           memwalBlobId: result.memwal?.blobId
+        };
+      }
+    }),
+    tool({
+      name: "hibi_get_photo_gallery_url",
+      label: "Get Hibi Photo Gallery",
+      description: "Return a Hibi Web URL where the family can browse saved photos.",
+      parameters: Type.Object({}),
+      async execute(_input, config: HibiPluginConfig, context) {
+        context.signal?.throwIfAborted();
+        const client = new HibiClient(config);
+        const result = await client.getPhotoGalleryLink({
+          signal: context.signal
+        });
+
+        return {
+          ok: result.ok,
+          reply: result.reply,
+          viewUrl: result.viewUrl
         };
       }
     }),
