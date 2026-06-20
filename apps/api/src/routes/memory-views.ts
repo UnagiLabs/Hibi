@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 
 import { prisma } from "../db.js";
+import { serializeMediaAssetPhoto } from "../media-assets.js";
 import { getLocalDayRange } from "../time/day-range.js";
 
 type MemoryViewParams = {
@@ -76,13 +77,57 @@ export async function registerMemoryViewRoutes(server: FastifyInstance) {
     }
 
     if (viewSession.viewType === "monthly_growth_album") {
-      const album = viewSession.albumId
-        ? await prisma.album.findUnique({
-            where: {
-              id: viewSession.albumId
+      const [album, mediaAssets] = await Promise.all([
+        viewSession.albumId
+          ? prisma.album.findUnique({
+              where: {
+                id: viewSession.albumId
+              }
+            })
+          : null,
+        prisma.mediaAsset.findMany({
+          where: {
+            familyId: viewSession.familyId,
+            memorySpaceId: viewSession.memorySpaceId,
+            status: "stored",
+            OR: [
+              {
+                createdAt: {
+                  gte: rangeStart,
+                  lt: rangeEnd
+                }
+              },
+              {
+                memoryItems: {
+                  some: {
+                    occurredAt: {
+                      gte: rangeStart,
+                      lt: rangeEnd
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          include: {
+            memoryItems: {
+              where: {
+                occurredAt: {
+                  gte: rangeStart,
+                  lt: rangeEnd
+                }
+              },
+              orderBy: {
+                occurredAt: "asc"
+              },
+              take: 1
             }
-          })
-        : null;
+          },
+          orderBy: {
+            createdAt: "asc"
+          }
+        })
+      ]);
 
       return reply.send({
         ok: true,
@@ -106,7 +151,8 @@ export async function registerMemoryViewRoutes(server: FastifyInstance) {
               manifestSha256: album.manifestSha256
             }
           : null,
-        careLogs: careLogs.map(serializeCareLog)
+        careLogs: careLogs.map(serializeCareLog),
+        photos: mediaAssets.map((mediaAsset) => serializeMediaAssetPhoto(mediaAsset, mediaAsset.memoryItems[0] ?? null))
       });
     }
 
