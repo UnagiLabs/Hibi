@@ -68,14 +68,17 @@ export type UploadPhotoResponse = {
   ok: boolean;
   mediaAsset?: {
     id: string;
+    caption?: string;
     originalName: string | null;
     mimeType: string | null;
     sizeBytes: number | null;
     walrusBlobId: string | null;
     sha256: string | null;
     status: string;
+    occurredAt?: string;
     createdAt: string;
     url: string | null;
+    pageUrl?: string;
   };
   memoryItemId?: string | null;
   walrus?: {
@@ -90,6 +93,13 @@ export type UploadPhotoResponse = {
     namespace?: string;
     error?: string;
   } | null;
+  error?: string;
+};
+
+export type PhotoGalleryLinkResponse = {
+  ok: boolean;
+  viewUrl?: string;
+  reply?: string;
   error?: string;
 };
 
@@ -134,6 +144,10 @@ export class HibiClient {
     form.set("file", photo, input.filename);
 
     return this.#postForm("/api/photos", form, options);
+  }
+
+  getPhotoGalleryLink(options: HibiRequestOptions = {}): Promise<PhotoGalleryLinkResponse> {
+    return this.#post("/api/media/gallery-link", {}, options);
   }
 
   async #post<T>(path: string, body: unknown, options: HibiRequestOptions): Promise<T> {

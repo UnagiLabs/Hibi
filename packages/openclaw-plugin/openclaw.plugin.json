@@ -25,6 +25,7 @@
       "hibi_remember_text",
       "hibi_recall_memory",
       "hibi_upload_photo",
+      "hibi_get_photo_gallery_url",
       "hibi_generate_monthly_album"
     ]
   }
