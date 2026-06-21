@@ -9,11 +9,13 @@ import {
   Images
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { FamilyAccessPanel } from "@/components/family-access-panel";
 import { SiteHeader } from "@/components/site-header";
 import {
+  demoNotes,
   demoArchiveStatus,
   demoRecentViews,
   type ArchiveStatusItem,
@@ -46,6 +48,15 @@ export default async function HomePage({ searchParams }: PageProps) {
   const query = await searchParams;
   const locale = parseLocale(query.lang);
   const dictionary = getDictionary(locale);
+  const steps = dictionary.homeHowToSteps;
+  const showcaseAlbumImages = [
+    "/IMG_1593.jpeg",
+    "/IMG_1594.jpeg",
+    "/IMG_1596.jpeg",
+    "/IMG_1598.jpeg"
+  ];
+  const showcaseCareLogImages = ["/IMG_1598.jpeg", "/IMG_1599.jpeg"];
+  const showcaseNotes = demoNotes.slice(0, 2);
 
   return (
     <main className="shell">
@@ -67,6 +78,12 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
         </div>
         <div className="home-preview" aria-hidden="true">
+          <img
+            src="/HiBi.png"
+            alt=""
+            aria-hidden="true"
+            className="home-preview-logo"
+          />
           <div className="phone-frame">
             <div className="phone-top" />
             <div className="mini-log pink" />
@@ -77,9 +94,81 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       </section>
 
+      <section className="fade-up fade-up-1 home-showcase" aria-labelledby="showcase-heading">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">{dictionary.homeShowcaseTitle}</p>
+            <h2 id="showcase-heading">{dictionary.homeShowcaseTitle}</h2>
+            <p className="hint">{dictionary.homeShowcaseHint}</p>
+          </div>
+        </div>
+        <div className="showcase-grid">
+          <article className="showcase-card">
+            <div className="showcase-copy">
+              <p className="eyebrow">{dictionary.nav.albums}</p>
+              <h3>{dictionary.homeShowcaseAlbumTitle}</h3>
+              <p>{dictionary.homeShowcaseAlbumBody}</p>
+            </div>
+            <div className="showcase-media" aria-hidden="true">
+              <p className="showcase-label">{dictionary.homeShowcaseAlbumCover}</p>
+              <div className="mock-photo-grid">
+                {showcaseAlbumImages.map((image, idx) => (
+                  <span key={image} className="mock-photo">
+                    <Image
+                      className="showcase-media-photo"
+                      src={image}
+                      alt={`${dictionary.homeShowcaseAlbumTitle} ${idx + 1}`}
+                      fill
+                      sizes="(max-width: 720px) 50vw, 160px"
+                    />
+                  </span>
+                ))}
+              </div>
+            </div>
+            <Link className="text-link" href={withLocale("/albums/monthly", locale)}>
+              {dictionary.homeShowcaseAlbumLink}
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </article>
+          <article className="showcase-card">
+            <div className="showcase-copy">
+              <p className="eyebrow">{dictionary.careLog}</p>
+              <h3>{dictionary.homeShowcaseCareLogTitle}</h3>
+              <p>{dictionary.homeShowcaseCareLogBody}</p>
+            </div>
+            <div className="showcase-media" aria-hidden="true">
+              <p className="showcase-label">{dictionary.homeShowcaseCareLogListLabel}</p>
+              <div className="log-mock">
+                {showcaseNotes.map((note, index) => (
+                  <article key={note.id} className="log-item">
+                    <div className="log-thumb">
+                      <Image
+                        className="log-thumb-img"
+                        src={showcaseCareLogImages[index % showcaseCareLogImages.length]}
+                        alt={`${dictionary.homeShowcaseCareLogTitle} ${index + 1}`}
+                        fill
+                        sizes="82px"
+                      />
+                    </div>
+                    <div>
+                      <p className="log-date">{note.date[locale]}</p>
+                      <p>{note.text[locale]}</p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </div>
+            <Link className="text-link" href={withLocale("/v/demo", locale)}>
+              {dictionary.homeShowcaseCareLogLink}
+              <ArrowRight size={16} aria-hidden="true" />
+            </Link>
+          </article>
+        </div>
+      </section>
+
       <FamilyAccessPanel locale={locale} />
 
-      <section className="fade-up fade-up-1" aria-labelledby="quick-actions-heading">
+      <section className="fade-up fade-up-2" aria-labelledby="quick-actions-heading">
         <div className="section-header">
           <div>
             <p className="eyebrow">{dictionary.quickActions}</p>
@@ -108,7 +197,28 @@ export default async function HomePage({ searchParams }: PageProps) {
         </div>
       </section>
 
-      <section className="fade-up fade-up-2" aria-labelledby="recent-heading">
+      <section className="fade-up fade-up-3" aria-labelledby="howto-heading">
+        <div className="section-header">
+          <div>
+            <p className="eyebrow">{dictionary.homeHowToTitle}</p>
+            <h2 id="howto-heading">{dictionary.homeHowToTitle}</h2>
+            <p className="hint">{dictionary.homeHowToHint}</p>
+          </div>
+        </div>
+        <ol className="step-list">
+          {steps.map((step, idx) => (
+            <li key={step.title} className="step-item">
+              <span className="step-index">{idx + 1}</span>
+              <div>
+                <strong>{step.title}</strong>
+                <p>{step.detail}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section className="fade-up fade-up-4" aria-labelledby="recent-heading">
         <div className="section-header">
           <div>
             <p className="eyebrow">{dictionary.recentViews}</p>

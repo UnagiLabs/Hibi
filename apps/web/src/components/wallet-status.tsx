@@ -18,7 +18,7 @@ export function WalletStatus({ locale }: { locale: Locale }) {
         </div>
         <div>
           <strong>{account ? dictionary.walletConnected : dictionary.walletPrompt}</strong>
-          <span>{account ? shortenAddress(account.address) : dictionary.walletDemoMode}</span>
+          {account ? <span>{shortenAddress(account.address)}</span> : null}
         </div>
       </div>
       <div className="wallet-connect-trigger">

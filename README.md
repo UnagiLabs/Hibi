@@ -50,6 +50,31 @@ The local MVP path is implemented for the Hibi API and Web app:
 
 OpenClaw packaging and production multi-family auth are still future phases.
 
+## Why Hibi uses local API in the OSS setup
+
+Hibi is designed for self-hosted personal use in an OSS flow:
+
+- The web app can be published on Vercel or similar platforms.
+- The API runs in your own environment as your local service endpoint.
+- Photos, caregiving logs, and family relationship data are personal data, so keeping the API local gives you direct data ownership and secret control.
+
+## Quick usage
+
+1. Start API server
+   - `pnpm install`
+   - `cp apps/api/.env.example apps/api/.env`
+   - `pnpm db:migrate`
+   - `pnpm db:seed`
+   - `pnpm dev:api`
+2. Start web app in another terminal
+   - `cp apps/web/.env.example apps/web/.env`
+   - `pnpm dev:web`
+3. Create sample data
+   - `curl -X POST http://127.0.0.1:4000/api/messages -H 'content-type: application/json' -d '{"text":"ミルク120ml飲んだ"}'`
+   - (optional) `curl -X POST http://127.0.0.1:4000/api/albums/generate -H 'content-type: application/json' -d '{"targetYear":2026,"targetMonth":6}'`
+4. Open the returned `viewUrl` in the browser
+5. Connect a Sui wallet and check Albums / Care Log / Archive
+
 ## Development
 
 Install dependencies:
@@ -177,6 +202,31 @@ scripts/               開発・保守用スクリプト
 - Web アプリは Sui ウォレット接続に対応し、デモ `FamilyMemberSBT` を検証できます。
 
 OpenClaw のパッケージ化と本番向けのマルチファミリー認証は、今後のフェーズです。
+
+## OSS公開前提のローカルAPI設計
+
+Hibiは、公開しやすいWebとローカル実行のAPIを分離した設計です。
+
+- WebはVercelなどで公開できます。
+- APIは各ユーザーのローカルまたはプライベート環境で起動します。
+- 写真・育児ログ・家族情報は個人情報を含むため、APIをあなたの環境で運用してデータ所有とキー管理を明確にします。
+
+## 使い方（ハンズオン）
+
+1. APIを起動
+   - `pnpm install`
+   - `cp apps/api/.env.example apps/api/.env`
+   - `pnpm db:migrate`
+   - `pnpm db:seed`
+   - `pnpm dev:api`
+2. 別ターミナルでWebを起動
+   - `cp apps/web/.env.example apps/web/.env`
+   - `pnpm dev:web`
+3. サンプルデータを作成
+   - `curl -X POST http://127.0.0.1:4000/api/messages -H 'content-type: application/json' -d '{"text":"ミルク120ml飲んだ"}'`
+   - （任意）`curl -X POST http://127.0.0.1:4000/api/albums/generate -H 'content-type: application/json' -d '{"targetYear":2026,"targetMonth":6}'`
+4. 返却された `viewUrl` をブラウザで開く
+5. Suiウォレットを接続して、アルバム / 育児ログ / アーカイブを確認
 
 ## 開発
 

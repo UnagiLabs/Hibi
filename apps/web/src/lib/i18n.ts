@@ -19,6 +19,22 @@ export type Dictionary = {
   homeHeroBody: string;
   openViewUrl: string;
   checkApiStatus: string;
+  homeShowcaseTitle: string;
+  homeShowcaseHint: string;
+  homeShowcaseAlbumTitle: string;
+  homeShowcaseAlbumBody: string;
+  homeShowcaseAlbumCover: string;
+  homeShowcaseAlbumLink: string;
+  homeShowcaseCareLogTitle: string;
+  homeShowcaseCareLogBody: string;
+  homeShowcaseCareLogListLabel: string;
+  homeShowcaseCareLogLink: string;
+  homeHowToTitle: string;
+  homeHowToHint: string;
+  homeHowToSteps: {
+    title: string;
+    detail: string;
+  }[];
   quickActions: string;
   quickActionsHint: string;
   recentViews: string;
@@ -108,7 +124,6 @@ export type Dictionary = {
   wallet: string;
   walletPrompt: string;
   walletConnected: string;
-  walletDemoMode: string;
   familyAccess: string;
   comingSoon: string;
   ja: string;
@@ -132,9 +147,41 @@ const dictionaries: Record<Locale, Dictionary> = {
 
     homeHeroTitle: "Family memories, remembered.",
     homeHeroBody:
-      "Open childcare logs and growth albums created from chat, then connect a Sui wallet to prepare for family archive verification.",
+      "Open logs and growth albums created from chat, then connect a Sui wallet for family archive verification in your own self-hosted setup.",
     openViewUrl: "Open a View URL",
     checkApiStatus: "Check API status",
+    homeShowcaseTitle: "Try the Hibi experience",
+    homeShowcaseHint: "Albums and care logs shown as they appear in the product.",
+    homeShowcaseAlbumTitle: "Monthly growth album",
+    homeShowcaseAlbumBody:
+      "Photos, milestones, and notes are grouped into a friendly timeline for each month.",
+    homeShowcaseAlbumCover: "Album preview",
+    homeShowcaseAlbumLink: "Open album page",
+    homeShowcaseCareLogTitle: "Care log timeline",
+    homeShowcaseCareLogBody:
+      "Daily care records are easy to scan by day, time, and note.",
+    homeShowcaseCareLogListLabel: "Care log preview",
+    homeShowcaseCareLogLink: "Open care log page",
+    homeHowToTitle: "How to use Hibi",
+    homeHowToHint: "Run on your own machine in four steps.",
+    homeHowToSteps: [
+      {
+        title: "Run Hibi API",
+        detail: "Start the API service on your own environment at `http://127.0.0.1:4000`."
+      },
+      {
+        title: "Run Hibi Web",
+        detail: "Start the web app on another terminal and open `http://127.0.0.1:3000`."
+      },
+      {
+        title: "Connect wallet",
+        detail: "Connect a Sui wallet that owns the FamilyMemberSBT to unlock family access."
+      },
+      {
+        title: "View memories",
+        detail: "Open a View URL returned by your local API and explore album / care log pages."
+      }
+    ],
     quickActions: "Where to next?",
     quickActionsHint: "Jump straight into your family memories.",
     recentViews: "Recently opened",
@@ -215,7 +262,6 @@ const dictionaries: Record<Locale, Dictionary> = {
     wallet: "Wallet",
     walletPrompt: "Connect wallet",
     walletConnected: "Connected wallet",
-    walletDemoMode: "Demo mode for now. This will verify FamilyVault ownership later.",
     familyAccess: "Family access",
     comingSoon: "Coming soon",
     ja: "日本語",
@@ -246,9 +292,39 @@ const dictionaries: Record<Locale, Dictionary> = {
 
     homeHeroTitle: "家族の日々を、未来に残す。",
     homeHeroBody:
-      "チャットから生まれた育児ログや成長アルバムを開いて、Suiウォレットを接続すると家族アーカイブの確認に進めます。",
+      "HibiはOSS前提のセルフホスティング設計です。Webは公開しやすく、APIは各自のローカル環境で起動して使います。",
     openViewUrl: "ビューURLを開く",
     checkApiStatus: "API状態を確認",
+    homeShowcaseTitle: "Hibi の使い方を試してみる",
+    homeShowcaseHint: "アルバムと育児ログが、こんな表示になるイメージです。",
+    homeShowcaseAlbumTitle: "月ごとのアルバム",
+    homeShowcaseAlbumBody: "写真やメモ、マイルストーンが月単位でまとまり、成長の流れが見やすくなります。",
+    homeShowcaseAlbumCover: "アルバムの見え方",
+    homeShowcaseAlbumLink: "アルバムを見る",
+    homeShowcaseCareLogTitle: "育児ログ",
+    homeShowcaseCareLogBody: "毎日の記録を時系列で確認できる、サッと見えるタイムラインです。",
+    homeShowcaseCareLogListLabel: "育児ログの見え方",
+    homeShowcaseCareLogLink: "育児ログを見る",
+    homeHowToTitle: "ローカル自己運用の手順",
+    homeHowToHint: "自分の端末で4ステップ。データはあなたの環境で管理できます。",
+    homeHowToSteps: [
+      {
+        title: "APIを起動",
+        detail: "まずAPIを起動し、`http://127.0.0.1:4000` で個人環境のバックエンドを起動します。"
+      },
+      {
+        title: "Webを起動",
+        detail: "続いてWebを起動し、`http://127.0.0.1:3000` で画面を開きます。"
+      },
+      {
+        title: "ウォレット接続",
+        detail: "FamilyMemberSBTを持つSuiウォレットを接続して、ファミリー認証を有効化します。"
+      },
+      {
+        title: "画面を開く",
+        detail: "APIのレスポンスで返ってくるviewUrlを開いて、アルバム / 育児ログを閲覧します。"
+      }
+    ],
     quickActions: "今日はどこを見る？",
     quickActionsHint: "家族の思い出にすぐ飛べます。",
     recentViews: "最近開いたビュー",
@@ -329,7 +405,6 @@ const dictionaries: Record<Locale, Dictionary> = {
     wallet: "ウォレット",
     walletPrompt: "ウォレットを接続",
     walletConnected: "接続済みウォレット",
-    walletDemoMode: "現在はdemo modeです。次の段階でFamilyVault確認に使います。",
     familyAccess: "家族アクセス",
     comingSoon: "準備中",
     ja: "日本語",
