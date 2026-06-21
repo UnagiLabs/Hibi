@@ -865,6 +865,58 @@ h2 {
   font-variant-numeric: tabular-nums;
 }
 
+.proof-card .section-header {
+  align-items: start;
+}
+
+.proof-row {
+  align-items: flex-start;
+}
+
+.proof-row svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.proof-main {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.proof-label,
+.proof-meta {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.proof-label {
+  color: #d8879a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.proof-meta {
+  overflow-wrap: anywhere;
+  line-height: 1.35;
+}
+
+.proof-row .proof {
+  max-width: min(44%, 360px);
+  overflow-wrap: anywhere;
+  text-align: right;
+  line-height: 1.35;
+}
+
+.proof-row-compact {
+  background: rgba(255, 244, 204, 0.42);
+}
+
+.proof-row-compact .proof-label {
+  color: #a98117;
+}
+
 /* ---------- album hub ---------- */
 
 .album-grid {
