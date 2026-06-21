@@ -37,6 +37,7 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
   const displayYear = monthlyAlbum.ok ? monthlyAlbum.targetYear : targetYear ?? 2026;
   const displayMonth = monthlyAlbum.ok ? monthlyAlbum.targetMonth : targetMonth ?? 6;
   const uploadedPhotos = monthlyAlbum.ok ? monthlyAlbum.photos : [];
+  const showUploadedPhotos = uploadedPhotos.length >= 3;
   const monthLabel = formatMonthLabel(displayYear, displayMonth, locale);
 
   return (
@@ -53,7 +54,7 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
         </div>
         <div className="metric-strip">
           <div>
-            <strong>{uploadedPhotos.length || demoHighlightPhotos.length}</strong>
+            <strong>{showUploadedPhotos ? uploadedPhotos.length : demoHighlightPhotos.length}</strong>
             <span>{dictionary.highlightPhotos}</span>
           </div>
           <div>
@@ -66,7 +67,7 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
       <section className="fade-up fade-up-1">
         <SectionHeader eyebrow={dictionary.monthlyEyebrow} title={dictionary.highlightPhotos} />
         <div className="photo-grid">
-          {uploadedPhotos.length > 0
+          {showUploadedPhotos
             ? uploadedPhotos.map((photo) => <UploadedPhotoTile key={photo.id} photo={photo} locale={locale} />)
             : demoHighlightPhotos.map((photo) => <PhotoTile key={photo.id} photo={photo} locale={locale} />)}
         </div>

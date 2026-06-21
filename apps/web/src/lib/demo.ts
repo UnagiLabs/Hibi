@@ -20,6 +20,7 @@ export type DemoAlbum = {
   type: "monthly_highlights" | "yearly_highlights" | "on_this_day" | "photo_gallery" | "care_log_day";
   href: string;
   cover: Tone;
+  coverSrc?: string;
   title: Record<Locale, string>;
   hint: Record<Locale, string>;
   photoCount: number;
@@ -45,12 +46,12 @@ const photo = (id: string, tone: Tone, en: string, ja: string, src?: string): De
 });
 
 export const demoHighlightPhotos: DemoPhoto[] = [
-  photo("p1", "yellow", "Morning by the window", "窓辺の朝"),
-  photo("p2", "pink", "First real giggle", "はじめての大笑い"),
-  photo("p3", "green", "Park walk", "公園のおさんぽ"),
-  photo("p4", "blue", "Bath time splash", "おふろでバシャバシャ"),
-  photo("p5", "pink", "Nap on dad", "パパの上でお昼寝"),
-  photo("p6", "yellow", "New hat", "あたらしい帽子")
+  photo("p1", "yellow", "Wrapped up after a family drive", "家族で出かけた帰り道", "/IMG_1593.jpeg"),
+  photo("p2", "pink", "Tiny newborn blanket", "小さなブランケット", "/IMG_1596.jpeg"),
+  photo("p3", "green", "The dogs napping nearby", "そばで眠る犬たち", "/IMG_1594.jpeg"),
+  photo("p4", "blue", "A quiet afternoon nap", "静かなお昼寝", "/IMG_1599.jpeg"),
+  photo("p5", "pink", "Soft bear outfit", "ふわふわのくまさん服", "/IMG_1598.jpeg"),
+  photo("p6", "yellow", "A small ordinary day", "小さな普通の日", "/IMG_1593.jpeg")
 ];
 
 export const demoMilestones: DemoMilestone[] = [
@@ -79,6 +80,7 @@ export const demoAlbums: DemoAlbum[] = [
     type: "monthly_highlights",
     href: "/albums/monthly",
     cover: "yellow",
+    coverSrc: "/IMG_1599.jpeg",
     title: { en: "This Month", ja: "今月" },
     hint: { en: "June 2026 · best photos & moments", ja: "2026年6月 · いい写真と出来事" },
     photoCount: 24
@@ -88,6 +90,7 @@ export const demoAlbums: DemoAlbum[] = [
     type: "yearly_highlights",
     href: "/albums/yearly",
     cover: "pink",
+    coverSrc: "/IMG_1596.jpeg",
     title: { en: "This Year", ja: "今年" },
     hint: { en: "2026 · growth, month by month", ja: "2026年 · 月ごとの成長" },
     photoCount: 188
@@ -97,6 +100,7 @@ export const demoAlbums: DemoAlbum[] = [
     type: "on_this_day",
     href: "/albums/on-this-day",
     cover: "green",
+    coverSrc: "/IMG_1593.jpeg",
     title: { en: "On This Day", ja: "去年の今日" },
     hint: { en: "A year ago today, and before", ja: "1年前の今日、その前も" },
     photoCount: 6
@@ -106,6 +110,7 @@ export const demoAlbums: DemoAlbum[] = [
     type: "photo_gallery",
     href: "/albums/photos",
     cover: "yellow",
+    coverSrc: "/IMG_1594.jpeg",
     title: { en: "Photo Library", ja: "写真ライブラリ" },
     hint: { en: "All saved photos", ja: "保存した写真すべて" },
     photoCount: 0
@@ -115,6 +120,7 @@ export const demoAlbums: DemoAlbum[] = [
     type: "care_log_day",
     href: "/v/demo",
     cover: "blue",
+    coverSrc: "/IMG_1598.jpeg",
     title: { en: "Care Log", ja: "育児ログ" },
     hint: { en: "Look back on daily care", ja: "毎日の記録を振り返る" },
     photoCount: 0

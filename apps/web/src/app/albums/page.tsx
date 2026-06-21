@@ -17,6 +17,7 @@ type DisplayAlbum = DemoAlbum | {
   type: string;
   href: string;
   cover: Tone;
+  coverSrc?: string;
   title: Record<Locale, string>;
   hint: Record<Locale, string>;
   photoCount: number;
@@ -38,6 +39,15 @@ const ALBUM_TONE: Record<string, Tone> = {
   photo_gallery: "blue",
   care_log_day: "blue",
   monthly_growth_album: "yellow"
+};
+
+const ALBUM_COVER_SRC: Record<string, string> = {
+  monthly_highlights: "/IMG_1599.jpeg",
+  yearly_highlights: "/IMG_1596.jpeg",
+  on_this_day: "/IMG_1593.jpeg",
+  photo_gallery: "/IMG_1594.jpeg",
+  care_log_day: "/IMG_1598.jpeg",
+  monthly_growth_album: "/IMG_1599.jpeg"
 };
 
 const MONTH_NAMES: Record<number, string> = {
@@ -63,11 +73,10 @@ export default async function AlbumsPage({ searchParams }: PageProps) {
   const albumsResponse = await fetchAlbums({
     walletAddress
   });
-  const albums = albumsResponse.ok
-    ? albumsResponse.albums.length > 0
-      ? albumsResponse.albums.map((album) => toDisplayAlbum(album, locale, walletAddress))
-      : demoAlbums
-    : demoAlbums;
+  const liveAlbums = albumsResponse.ok
+    ? albumsResponse.albums.map((album) => toDisplayAlbum(album, locale, walletAddress))
+    : [];
+  const albums = liveAlbums.length >= 3 ? liveAlbums : mergeDemoAlbums(liveAlbums);
 
   return (
     <main className="shell">
@@ -99,7 +108,8 @@ function AlbumCard({ album, locale }: { album: DisplayAlbum; locale: Locale }) {
 
   return (
     <Link className="album-card" href={withLocale(album.href, locale)}>
-      <div className={`album-cover tone-${album.cover}`}>
+      <div className={`album-cover tone-${album.cover}${album.coverSrc ? " has-photo" : ""}`}>
+        {album.coverSrc ? <img src={album.coverSrc} alt="" loading="lazy" /> : null}
         <span className="cover-emoji" aria-hidden="true">
           {ALBUM_EMOJI[album.type]}
         </span>
@@ -131,6 +141,7 @@ function toDisplayAlbum(album: AlbumSummary, locale: Locale, walletAddress?: str
     type: album.type,
     href: resolveAlbumHref(album, walletAddress),
     cover: ALBUM_TONE[album.type] ?? "blue",
+    coverSrc: ALBUM_COVER_SRC[album.type],
     title: {
       en: album.title,
       ja: album.title
@@ -166,6 +177,17 @@ function resolveAlbumHref(album: AlbumSummary, walletAddress?: string): string {
   }
 
   return "/albums";
+}
+
+function mergeDemoAlbums(liveAlbums: DisplayAlbum[]): DisplayAlbum[] {
+  const liveTypes = new Set(liveAlbums.map((album) => albumFamily(album.type)));
+  const fallbackAlbums = demoAlbums.filter((album) => !liveTypes.has(albumFamily(album.type)));
+
+  return [...liveAlbums, ...fallbackAlbums];
+}
+
+function albumFamily(type: string): string {
+  return type === "monthly_growth_album" ? "monthly_highlights" : type;
 }
 
 function parseWalletAddress(value?: string | string[]): string | undefined {
