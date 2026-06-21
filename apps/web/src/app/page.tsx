@@ -78,6 +78,12 @@ export default async function HomePage({ searchParams }: PageProps) {
           </div>
         </div>
         <div className="home-preview" aria-hidden="true">
+          <img
+            src="/HiBi.png"
+            alt=""
+            aria-hidden="true"
+            className="home-preview-logo"
+          />
           <div className="phone-frame">
             <div className="phone-top" />
             <div className="mini-log pink" />
