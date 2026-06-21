@@ -2,10 +2,10 @@ import { createHash } from "node:crypto";
 
 import type { FastifyInstance, FastifyRequest } from "fastify";
 
-import { demoContext } from "../demo-context.js";
 import { prisma } from "../db.js";
 import { buildPhotoGalleryUrl, serializeMediaAssetPhoto } from "../media-assets.js";
 import { rememberMemoryItem } from "../memwal/remember.js";
+import { resolveFamilyContext } from "../family-context.js";
 import { readBlobFromWalrus, uploadMediaToWalrus } from "../walrus/client.js";
 
 const MAX_PHOTO_BYTES = 8 * 1024 * 1024;
@@ -33,6 +33,17 @@ type ParsedPhotoUpload =
 
 export async function registerMediaRoutes(server: FastifyInstance) {
   server.post("/api/photos", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
+
     if (!request.isMultipart()) {
       return reply.status(415).send({
         ok: false,
@@ -51,8 +62,8 @@ export async function registerMediaRoutes(server: FastifyInstance) {
 
     const mediaAsset = await prisma.mediaAsset.create({
       data: {
-        familyId: demoContext.familyId,
-        memorySpaceId: demoContext.memorySpaceId,
+        familyId: familyContext.familyId,
+        memorySpaceId: familyContext.memorySpaceId,
         originalName: parsed.filename,
         mimeType: parsed.mimeType,
         sizeBytes: parsed.bytes.byteLength,
@@ -79,8 +90,8 @@ export async function registerMediaRoutes(server: FastifyInstance) {
     const memoryItem = caption
       ? await prisma.memoryItem.create({
           data: {
-            familyId: demoContext.familyId,
-            memorySpaceId: demoContext.memorySpaceId,
+            familyId: familyContext.familyId,
+            memorySpaceId: familyContext.memorySpaceId,
             mediaAssetId: updatedMediaAsset.id,
             body: caption,
             sourceText: caption,
@@ -100,11 +111,22 @@ export async function registerMediaRoutes(server: FastifyInstance) {
     });
   });
 
-  server.get("/api/media-assets", async () => {
+  server.get("/api/media-assets", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
+
     const mediaAssets = await prisma.mediaAsset.findMany({
       where: {
-        familyId: demoContext.familyId,
-        memorySpaceId: demoContext.memorySpaceId,
+        familyId: familyContext.familyId,
+        memorySpaceId: familyContext.memorySpaceId,
         status: "stored"
       },
       include: {
@@ -127,11 +149,22 @@ export async function registerMediaRoutes(server: FastifyInstance) {
   });
 
   server.get<{ Params: { mediaId: string } }>("/api/media-assets/:mediaId", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
+
     const mediaAsset = await prisma.mediaAsset.findFirst({
       where: {
         id: request.params.mediaId,
-        familyId: demoContext.familyId,
-        memorySpaceId: demoContext.memorySpaceId,
+        familyId: familyContext.familyId,
+        memorySpaceId: familyContext.memorySpaceId,
         status: "stored"
       },
       include: {
@@ -168,18 +201,30 @@ export async function registerMediaRoutes(server: FastifyInstance) {
   });
 
   server.get<{ Params: { mediaId: string } }>("/api/media/:mediaId/blob", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
+
     const mediaAsset = await prisma.mediaAsset.findUnique({
       where: {
         id: request.params.mediaId
       }
     });
 
-    if (!mediaAsset) {
+    if (!mediaAsset || mediaAsset.familyId !== familyContext.familyId || mediaAsset.memorySpaceId !== familyContext.memorySpaceId) {
       return reply.status(404).send({
         ok: false,
         error: "Media asset was not found."
       });
     }
+
 
     if (!mediaAsset.walrusBlobId) {
       return reply.status(409).send({

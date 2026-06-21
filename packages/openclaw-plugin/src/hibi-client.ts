@@ -2,6 +2,7 @@ import { getApiBaseUrl, type HibiPluginConfig } from "./config.js";
 
 type HibiRequestOptions = {
   signal?: AbortSignal;
+  walletAddress?: string;
 };
 
 export type RememberTextResponse = {
@@ -153,9 +154,7 @@ export class HibiClient {
   async #post<T>(path: string, body: unknown, options: HibiRequestOptions): Promise<T> {
     const response = await fetch(`${this.#apiBaseUrl}${path}`, {
       method: "POST",
-      headers: {
-        "content-type": "application/json"
-      },
+      headers: buildJsonHeaders(options.walletAddress),
       body: JSON.stringify(body),
       signal: options.signal
     });
@@ -174,6 +173,7 @@ export class HibiClient {
   async #postForm<T>(path: string, form: FormData, options: HibiRequestOptions): Promise<T> {
     const response = await fetch(`${this.#apiBaseUrl}${path}`, {
       method: "POST",
+      headers: buildFormHeaders(options.walletAddress),
       body: form,
       signal: options.signal
     });
@@ -188,6 +188,28 @@ export class HibiClient {
 
     return payload;
   }
+}
+
+function buildJsonHeaders(walletAddress?: string): HeadersInit {
+  const headers: Record<string, string> = {
+    "content-type": "application/json"
+  };
+
+  if (walletAddress) {
+    headers["x-hibi-wallet"] = walletAddress.toLowerCase();
+  }
+
+  return headers;
+}
+
+function buildFormHeaders(walletAddress?: string): HeadersInit {
+  const headers: Record<string, string> = {};
+
+  if (walletAddress) {
+    headers["x-hibi-wallet"] = walletAddress.toLowerCase();
+  }
+
+  return headers;
 }
 
 function decodeBase64Image(value: string): Uint8Array {

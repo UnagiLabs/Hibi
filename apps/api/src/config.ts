@@ -3,6 +3,7 @@ import "dotenv/config";
 const DEFAULT_PORT = 4000;
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_WALRUS_EPOCHS = 3;
+const DEFAULT_FAMILY_CONTEXT_MAP: Record<string, { familyId: string; memorySpaceId: string; userId: string }> = {};
 
 function readPort(value: string | undefined): number {
   if (!value) {
@@ -28,6 +29,38 @@ function readPositiveInteger(value: string | undefined, fallback: number, name: 
   }
 
   return parsed;
+}
+
+function readFamilyContextMap(value: string | undefined): Record<
+  string,
+  {
+    familyId: string;
+    memorySpaceId: string;
+    userId: string;
+  }
+> {
+  if (!value) {
+    return DEFAULT_FAMILY_CONTEXT_MAP;
+  }
+
+  try {
+    const parsed = JSON.parse(value);
+
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+      return DEFAULT_FAMILY_CONTEXT_MAP;
+    }
+
+    return parsed as Record<
+      string,
+      {
+        familyId: string;
+        memorySpaceId: string;
+        userId: string;
+      }
+    >;
+  } catch {
+    return DEFAULT_FAMILY_CONTEXT_MAP;
+  }
 }
 
 export const config = {
@@ -61,5 +94,6 @@ export const config = {
     uploadRelayUrl:
       process.env.WALRUS_UPLOAD_RELAY_URL?.trim() ||
       "https://upload-relay.testnet.walrus.space"
-  }
+  },
+  familyContextMap: readFamilyContextMap(process.env.HIBI_FAMILY_CONTEXT_MAP)
 };

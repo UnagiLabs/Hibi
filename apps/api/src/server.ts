@@ -10,6 +10,7 @@ import { registerMediaRoutes } from "./routes/media.js";
 import { registerMemoryViewRoutes } from "./routes/memory-views.js";
 import { registerMessageRoutes } from "./routes/messages.js";
 import { registerRecallRoutes } from "./routes/recall.js";
+import { registerAuthContextRoutes } from "./routes/auth-context.js";
 import { checkSuiContract } from "./sui/client.js";
 
 export function buildServer() {
@@ -45,6 +46,7 @@ export function buildServer() {
   server.register(registerMessageRoutes);
   server.register(registerRecallRoutes);
   server.register(registerMemoryViewRoutes);
+  server.register(registerAuthContextRoutes);
 
   return server;
 }

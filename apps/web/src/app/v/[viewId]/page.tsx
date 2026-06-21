@@ -21,7 +21,10 @@ import { getDictionary, parseLocale, withLocale, type Locale } from "@/lib/i18n"
 
 type PageProps = {
   params: Promise<{ viewId: string }>;
-  searchParams: Promise<{ lang?: string | string[] }>;
+  searchParams: Promise<{
+    lang?: string | string[];
+    walletAddress?: string | string[];
+  }>;
 };
 
 export default async function MemoryViewPage({ params, searchParams }: PageProps) {
@@ -29,7 +32,8 @@ export default async function MemoryViewPage({ params, searchParams }: PageProps
   const query = await searchParams;
   const locale = parseLocale(query.lang);
   const dictionary = getDictionary(locale);
-  const response = await safeFetchMemoryView(viewId);
+  const walletAddress = parseWalletAddress(query.walletAddress);
+  const response = await safeFetchMemoryView(viewId, { walletAddress });
   const currentPath = `/v/${viewId}`;
 
   if (!response.ok) {
@@ -228,15 +232,26 @@ function SoftIllustration() {
   );
 }
 
-async function safeFetchMemoryView(viewId: string) {
+async function safeFetchMemoryView(viewId: string, context: { walletAddress?: string }) {
   try {
-    return await fetchMemoryView(viewId);
+    return await fetchMemoryView(viewId, context);
   } catch {
     return {
       ok: false as const,
       state: undefined
     };
   }
+}
+
+function parseWalletAddress(value?: string | string[]): string | undefined {
+  const raw = Array.isArray(value) ? value[0] : value;
+
+  if (!raw) {
+    return undefined;
+  }
+
+  const normalized = raw.trim().toLowerCase();
+  return /^0x[a-f0-9]{64}$/i.test(normalized) ? normalized : undefined;
 }
 
 function CareLogItem({ log, locale }: { log: CareLog; locale: Locale }) {

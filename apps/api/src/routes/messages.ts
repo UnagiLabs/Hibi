@@ -2,10 +2,10 @@ import type { FastifyInstance } from "fastify";
 
 import { createMessageValidator } from "../ai/validator-factory.js";
 import { config } from "../config.js";
-import { demoContext } from "../demo-context.js";
 import { prisma } from "../db.js";
 import { parseMessageWithRules } from "../intent/rule-parser.js";
 import { rememberCareLog, rememberMemoryItem } from "../memwal/remember.js";
+import { resolveFamilyContext } from "../family-context.js";
 import { getLocalDayRange } from "../time/day-range.js";
 
 const messageValidator = createMessageValidator();
@@ -46,6 +46,17 @@ function parseMessageBody(body: unknown):
 
 export async function registerMessageRoutes(server: FastifyInstance) {
   server.post("/api/messages", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
+
     const parsed = parseMessageBody(request.body);
 
     if (!parsed.ok) {
@@ -69,8 +80,8 @@ export async function registerMessageRoutes(server: FastifyInstance) {
       const { careLog, viewSession } = await prisma.$transaction(async (tx) => {
         const careLog = await tx.careLog.create({
           data: {
-            familyId: demoContext.familyId,
-            memorySpaceId: demoContext.memorySpaceId,
+            familyId: familyContext.familyId,
+            memorySpaceId: familyContext.memorySpaceId,
             category: validatedResult.category,
             amount: validatedResult.amount,
             unit: validatedResult.unit,
@@ -81,8 +92,8 @@ export async function registerMessageRoutes(server: FastifyInstance) {
         });
         const viewSession = await tx.memoryViewSession.create({
           data: {
-            familyId: demoContext.familyId,
-            memorySpaceId: demoContext.memorySpaceId,
+            familyId: familyContext.familyId,
+            memorySpaceId: familyContext.memorySpaceId,
             viewType: "care_log_day",
             rangeStart: dayRange.start,
             rangeEnd: dayRange.end
@@ -91,7 +102,7 @@ export async function registerMessageRoutes(server: FastifyInstance) {
 
         return { careLog, viewSession };
       });
-      const viewUrl = buildViewUrl(viewSession.id);
+      const viewUrl = buildViewUrlWithContext(viewSession.id, familyContext);
       const memwal = await rememberCareLog(careLog);
 
       return reply.status(201).send({
@@ -119,8 +130,8 @@ export async function registerMessageRoutes(server: FastifyInstance) {
 
     const memoryItem = await prisma.memoryItem.create({
       data: {
-        familyId: demoContext.familyId,
-        memorySpaceId: demoContext.memorySpaceId,
+        familyId: familyContext.familyId,
+        memorySpaceId: familyContext.memorySpaceId,
         body: parsed.text,
         sourceText: parsed.text,
         source: "message",
@@ -168,6 +179,23 @@ function buildCareLogReply(
     default:
       return `育児ログを記録しました。${suffix}`;
   }
+}
+
+function buildViewUrlWithContext(
+  viewId: string,
+  familyContext?: {
+    source: "demo" | "wallet";
+    walletAddress?: string;
+  }
+): string {
+  if (familyContext?.source !== "wallet" || !familyContext.walletAddress) {
+    return buildViewUrl(viewId);
+  }
+
+  const query = new URLSearchParams();
+  query.set("walletAddress", familyContext.walletAddress);
+
+  return `${config.webBaseUrl.replace(/\/$/, "")}/v/${viewId}?${query}`;
 }
 
 function buildViewUrl(viewId: string): string {
