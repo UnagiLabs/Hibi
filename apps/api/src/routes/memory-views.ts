@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 
+import { resolveFamilyContext } from "../family-context.js";
 import { prisma } from "../db.js";
 import { getLocalDayRange } from "../time/day-range.js";
 
@@ -9,6 +10,16 @@ type MemoryViewParams = {
 
 export async function registerMemoryViewRoutes(server: FastifyInstance) {
   server.get<{ Params: MemoryViewParams }>("/api/memory-views/:id/bootstrap", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
     const viewId = request.params.id;
 
     if (!viewId) {
@@ -18,8 +29,12 @@ export async function registerMemoryViewRoutes(server: FastifyInstance) {
       });
     }
 
-    const viewSession = await prisma.memoryViewSession.findUnique({
-      where: { id: viewId }
+    const viewSession = await prisma.memoryViewSession.findFirst({
+      where: {
+        id: viewId,
+        familyId: familyContext.familyId,
+        memorySpaceId: familyContext.memorySpaceId
+      }
     });
 
     if (!viewSession) {

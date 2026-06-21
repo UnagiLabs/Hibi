@@ -11,6 +11,11 @@ const configSchema = Type.Object(
         description: "Base URL for the Hibi API.",
         default: "http://127.0.0.1:4000"
       })
+    ),
+    walletAddress: Type.Optional(
+      Type.String({
+        description: "Sui wallet address for family-based access context."
+      })
     )
   },
   {
@@ -42,7 +47,7 @@ export default defineToolPlugin({
         context.signal?.throwIfAborted();
         const client = new HibiClient(config);
         const result = await client.rememberText(text, {
-          signal: context.signal
+          ...buildRequestOptions(config, context.signal)
         });
 
         return {
@@ -70,7 +75,7 @@ export default defineToolPlugin({
         context.signal?.throwIfAborted();
         const client = new HibiClient(config);
         const result = await client.recallMemory(query, {
-          signal: context.signal
+          ...buildRequestOptions(config, context.signal)
         });
 
         return {
@@ -125,7 +130,7 @@ export default defineToolPlugin({
             occurredAt
           },
           {
-            signal: context.signal
+            ...buildRequestOptions(config, context.signal)
           }
         );
 
@@ -169,7 +174,7 @@ export default defineToolPlugin({
             targetMonth
           },
           {
-            signal: context.signal
+            ...buildRequestOptions(config, context.signal)
           }
         );
 
@@ -190,3 +195,12 @@ export default defineToolPlugin({
     })
   ]
 });
+
+function buildRequestOptions(config: HibiPluginConfig, signal?: AbortSignal) {
+  return config.walletAddress
+    ? {
+        signal,
+        walletAddress: config.walletAddress
+      }
+    : { signal };
+}

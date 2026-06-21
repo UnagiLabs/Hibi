@@ -19,6 +19,35 @@ export type Album = {
   manifestSha256: string | null;
 };
 
+export type AlbumSummary = {
+  id: string;
+  type: string;
+  title: string;
+  targetYear: number | null;
+  targetMonth: number | null;
+  status: string;
+  manifestWalrusBlobId: string | null;
+  manifestSha256: string | null;
+  photoCount: number;
+  createdAt: string;
+};
+
+export type FamilyApiContext = {
+  walletAddress?: string;
+};
+
+export type AlbumsResponse =
+  | {
+      ok: true;
+      familyId: string;
+      count: number;
+      albums: AlbumSummary[];
+    }
+  | {
+      ok: false;
+      error: string;
+    };
+
 export type BootstrapResponse =
   | {
       ok: true;
@@ -120,11 +149,20 @@ export type MonthlyAlbumResponse =
       error: string;
     };
 
-export async function fetchMemoryView(viewId: string): Promise<BootstrapResponse> {
+function buildAuthHeaders(context?: FamilyApiContext): HeadersInit {
+  const walletAddress = normalizeWalletAddress(context?.walletAddress);
+  return walletAddress ? { "x-hibi-wallet": walletAddress } : {};
+}
+
+export async function fetchMemoryView(
+  viewId: string,
+  context?: FamilyApiContext
+): Promise<BootstrapResponse> {
   const apiBaseUrl = process.env.HIBI_API_URL ?? "http://127.0.0.1:4000";
   const response = await fetch(
     `${apiBaseUrl.replace(/\/$/, "")}/api/memory-views/${encodeURIComponent(viewId)}/bootstrap`,
     {
+      headers: buildAuthHeaders(context),
       cache: "no-store"
     }
   );
@@ -141,10 +179,22 @@ export async function fetchMemoryView(viewId: string): Promise<BootstrapResponse
   return data;
 }
 
-export async function fetchMonthlyAlbum(params?: {
-  targetYear?: number;
-  targetMonth?: number;
-}): Promise<MonthlyAlbumResponse> {
+function normalizeWalletAddress(value?: string): string | undefined {
+  if (!value || typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return /^0x[a-f0-9]{64}$/i.test(normalized) ? normalized : undefined;
+}
+
+export async function fetchMonthlyAlbum(
+  params?: {
+    targetYear?: number;
+    targetMonth?: number;
+  },
+  context?: FamilyApiContext
+): Promise<MonthlyAlbumResponse> {
   const apiBaseUrl = process.env.HIBI_API_URL ?? "http://127.0.0.1:4000";
   const searchParams = new URLSearchParams();
 
@@ -162,6 +212,7 @@ export async function fetchMonthlyAlbum(params?: {
     const response = await fetch(
       `${apiBaseUrl.replace(/\/$/, "")}/api/albums/monthly${query ? `?${query}` : ""}`,
       {
+        headers: buildAuthHeaders(context),
         cache: "no-store"
       }
     );
@@ -175,6 +226,32 @@ export async function fetchMonthlyAlbum(params?: {
     }
 
     return normalizeMonthlyAlbumResponse(data, apiBaseUrl);
+  } catch {
+    return {
+      ok: false,
+      error: "Cannot connect to Hibi API."
+    };
+  }
+}
+
+export async function fetchAlbums(context?: FamilyApiContext): Promise<AlbumsResponse> {
+  const apiBaseUrl = process.env.HIBI_API_URL ?? "http://127.0.0.1:4000";
+
+  try {
+    const response = await fetch(`${apiBaseUrl.replace(/\/$/, "")}/api/albums`, {
+      headers: buildAuthHeaders(context),
+      cache: "no-store"
+    });
+    const data = (await response.json()) as AlbumsResponse;
+
+    if (!response.ok && data.ok !== false) {
+      return {
+        ok: false,
+        error: "Cannot load album list."
+      };
+    }
+
+    return data;
   } catch {
     return {
       ok: false,

@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 
-import { recallDemoMemory } from "../memwal/recall.js";
+import { resolveFamilyContext } from "../family-context.js";
+import { recallMemoryByContext } from "../memwal/recall.js";
 
 type RecallRequestBody = {
   query?: unknown;
@@ -9,6 +10,16 @@ type RecallRequestBody = {
 
 export async function registerRecallRoutes(server: FastifyInstance) {
   server.post("/api/recall", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
     const parsed = parseRecallBody(request.body);
 
     if (!parsed.ok) {
@@ -18,7 +29,12 @@ export async function registerRecallRoutes(server: FastifyInstance) {
       });
     }
 
-    const recall = await recallDemoMemory(parsed.query, parsed.limit);
+    const recall = await recallMemoryByContext({
+      familyId: familyContext.familyId,
+      memorySpaceId: familyContext.memorySpaceId,
+      query: parsed.query,
+      limit: parsed.limit
+    });
 
     return reply.send({
       ok: recall.status === "ok",

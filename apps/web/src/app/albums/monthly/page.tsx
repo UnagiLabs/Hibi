@@ -11,6 +11,7 @@ type PageProps = {
     lang?: string | string[];
     targetYear?: string | string[];
     targetMonth?: string | string[];
+    walletAddress?: string | string[];
   }>;
 };
 
@@ -20,10 +21,14 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
   const dictionary = getDictionary(locale);
   const targetYear = parseIntegerParam(query.targetYear);
   const targetMonth = parseIntegerParam(query.targetMonth);
-  const monthlyAlbum = await fetchMonthlyAlbum({
+  const walletAddress = parseWalletAddress(query.walletAddress);
+  const monthlyAlbum = await fetchMonthlyAlbum(
+    {
     targetYear,
     targetMonth
-  });
+    },
+    { walletAddress }
+  );
   const highlightResults =
     monthlyAlbum.ok && monthlyAlbum.memwalHighlights.status === "ok"
       ? monthlyAlbum.memwalHighlights.results
@@ -96,6 +101,17 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
       </section>
     </main>
   );
+}
+
+function parseWalletAddress(value?: string | string[]): string | undefined {
+  const raw = Array.isArray(value) ? value[0] : value;
+
+  if (!raw) {
+    return undefined;
+  }
+
+  const normalized = raw.trim().toLowerCase();
+  return /^0x[a-f0-9]{64}$/i.test(normalized) ? normalized : undefined;
 }
 
 function UploadedPhotoTile({ photo }: { photo: MonthlyAlbumPhoto }) {

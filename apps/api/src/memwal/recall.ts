@@ -58,8 +58,32 @@ type RecallSource =
       id: string;
     };
 
-export async function recallDemoMemory(query: string, limit = DEFAULT_LIMIT): Promise<MemWalRecallOutcome> {
+export type FamilyContext = {
+  familyId: string;
+  memorySpaceId: string;
+};
+
+export async function recallMemoryByContext({
+  familyId,
+  memorySpaceId,
+  query,
+  limit = DEFAULT_LIMIT
+}: {
+  familyId: string;
+  memorySpaceId: string;
+  query: string;
+  limit?: number;
+}): Promise<MemWalRecallOutcome> {
   return recallHibiMemory({
+    familyId,
+    memorySpaceId,
+    query,
+    limit
+  });
+}
+
+export async function recallDemoMemory(query: string, limit = DEFAULT_LIMIT): Promise<MemWalRecallOutcome> {
+  return recallMemoryByContext({
     familyId: demoContext.familyId,
     memorySpaceId: demoContext.memorySpaceId,
     query,
@@ -76,15 +100,41 @@ export async function recallDemoMonthlyHighlights({
   month: number;
   limit?: number;
 }): Promise<MemWalRecallOutcome> {
-  return recallDemoMemory(
-    [
-      `${year}年${month}月のできるようになったこと`,
-      "成長",
-      "初めての出来事",
-      "milestone",
-      "first time"
-    ].join(" / "),
+  return recallMonthlyHighlightsByContext({
+    familyId: demoContext.familyId,
+    memorySpaceId: demoContext.memorySpaceId,
+    year,
+    month,
     limit
+  });
+}
+
+export async function recallMonthlyHighlightsByContext({
+  familyId,
+  memorySpaceId,
+  year,
+  month,
+  limit = DEFAULT_LIMIT
+}: {
+  familyId: string;
+  memorySpaceId: string;
+  year: number;
+  month: number;
+  limit?: number;
+}): Promise<MemWalRecallOutcome> {
+  return recallHibiMemory(
+    {
+      familyId,
+      memorySpaceId,
+      query: [
+        `${year}年${month}月のできるようになったこと`,
+        "成長",
+        "初めての出来事",
+        "milestone",
+        "first time"
+      ].join(" / "),
+      limit
+    }
   );
 }
 

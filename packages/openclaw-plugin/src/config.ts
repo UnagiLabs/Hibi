@@ -1,5 +1,6 @@
 export type HibiPluginConfig = {
   apiBaseUrl?: string;
+  walletAddress?: string;
 };
 
 export function getApiBaseUrl(config: HibiPluginConfig): string {

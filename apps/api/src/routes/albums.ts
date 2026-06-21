@@ -2,9 +2,12 @@ import type { FastifyInstance } from "fastify";
 
 import { buildMonthlyAlbumManifest } from "../albums/manifest.js";
 import { config } from "../config.js";
-import { demoContext } from "../demo-context.js";
 import { prisma } from "../db.js";
-import { recallDemoMonthlyHighlights, type EnrichedRecallResult } from "../memwal/recall.js";
+import {
+  recallMonthlyHighlightsByContext,
+  type EnrichedRecallResult
+} from "../memwal/recall.js";
+import { resolveFamilyContext } from "../family-context.js";
 import { recordAlbumOnSui } from "../sui/client.js";
 import { getLocalMonthRange, getLocalMonthRangeFromParts } from "../time/month-range.js";
 import { archiveAlbumManifestToWalrus } from "../walrus/client.js";
@@ -19,8 +22,65 @@ type MonthlyAlbumQuery = {
   targetMonth?: unknown;
 };
 
+type FamilyScopedContext = {
+  familyId: string;
+  memorySpaceId: string;
+  source: "demo" | "wallet";
+  walletAddress?: string;
+};
+
 export async function registerAlbumRoutes(server: FastifyInstance) {
+  server.get<{ Querystring: { include?: string } }>("/api/albums", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
+    const albums = await prisma.album.findMany({
+      where: {
+        familyId: familyContext.familyId,
+        memorySpaceId: familyContext.memorySpaceId
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+
+    return {
+      ok: true,
+      familyId: familyContext.familyId,
+      count: albums.length,
+      albums: albums.map((album) => ({
+        id: album.id,
+        type: album.type,
+        title: album.title,
+        targetYear: album.targetYear,
+        targetMonth: album.targetMonth,
+        status: album.status,
+        manifestWalrusBlobId: album.manifestWalrusBlobId,
+        manifestSha256: album.manifestSha256,
+        photoCount: 0,
+        createdAt: album.createdAt.toISOString()
+      }))
+    };
+  });
+
   server.get<{ Querystring: MonthlyAlbumQuery }>("/api/albums/monthly", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
     const parsed = parseMonthInput(request.query);
 
     if (!parsed.ok) {
@@ -34,8 +94,8 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
     const [album, memwalHighlights, mediaAssets] = await Promise.all([
       prisma.album.findFirst({
         where: {
-          familyId: demoContext.familyId,
-          memorySpaceId: demoContext.memorySpaceId,
+          familyId: familyContext.familyId,
+          memorySpaceId: familyContext.memorySpaceId,
           type: "monthly_growth_album",
           targetYear: monthRange.year,
           targetMonth: monthRange.month
@@ -44,8 +104,8 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
           createdAt: "desc"
         }
       }),
-      buildMonthlyMemWalHighlights(monthRange),
-      buildMonthlyMediaAssets(monthRange)
+      buildMonthlyMemWalHighlights(familyContext, monthRange),
+      buildMonthlyMediaAssets(familyContext, monthRange)
     ]);
 
     return reply.send({
@@ -63,6 +123,16 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
   });
 
   server.post("/api/albums/generate", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
     const parsed = parseMonthInput(request.body);
 
     if (!parsed.ok) {
@@ -77,8 +147,8 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
     const { album, viewSession } = await prisma.$transaction(async (tx) => {
       const existingAlbum = await tx.album.findFirst({
         where: {
-          familyId: demoContext.familyId,
-          memorySpaceId: demoContext.memorySpaceId,
+          familyId: familyContext.familyId,
+          memorySpaceId: familyContext.memorySpaceId,
           type: "monthly_growth_album",
           targetYear: monthRange.year,
           targetMonth: monthRange.month
@@ -91,8 +161,8 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
         existingAlbum ??
         (await tx.album.create({
           data: {
-            familyId: demoContext.familyId,
-            memorySpaceId: demoContext.memorySpaceId,
+            familyId: familyContext.familyId,
+            memorySpaceId: familyContext.memorySpaceId,
             type: "monthly_growth_album",
             title,
             targetYear: monthRange.year,
@@ -102,8 +172,8 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
         }));
       const viewSession = await tx.memoryViewSession.create({
         data: {
-          familyId: demoContext.familyId,
-          memorySpaceId: demoContext.memorySpaceId,
+          familyId: familyContext.familyId,
+          memorySpaceId: familyContext.memorySpaceId,
           albumId: album.id,
           viewType: "monthly_growth_album",
           rangeStart: monthRange.start,
@@ -113,13 +183,13 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
 
       return { album, viewSession };
     });
-    const viewUrl = buildViewUrl(viewSession.id);
+    const viewUrl = buildMonthlyAlbumPageUrl(familyContext, monthRange);
     const [memwalHighlights, careLogs, mediaAssets] = await Promise.all([
-      buildMonthlyMemWalHighlights(monthRange),
+      buildMonthlyMemWalHighlights(familyContext, monthRange),
       prisma.careLog.findMany({
         where: {
-          familyId: demoContext.familyId,
-          memorySpaceId: demoContext.memorySpaceId,
+          familyId: familyContext.familyId,
+          memorySpaceId: familyContext.memorySpaceId,
           occurredAt: {
             gte: monthRange.start,
             lt: monthRange.end
@@ -129,7 +199,7 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
           occurredAt: "asc"
         }
       }),
-      buildMonthlyMediaAssets(monthRange)
+      buildMonthlyMediaAssets(familyContext, monthRange)
     ]);
     const manifestArtifact = buildMonthlyAlbumManifest({
       albumId: album.id,
@@ -219,8 +289,20 @@ function parseMonthInput(input: unknown):
   return { ok: true, monthRange: getLocalMonthRangeFromParts(parsedYear, parsedMonth) };
 }
 
-function buildViewUrl(viewId: string): string {
-  return `${config.webBaseUrl.replace(/\/$/, "")}/v/${viewId}`;
+function buildMonthlyAlbumPageUrl(
+  familyContext: FamilyScopedContext,
+  monthRange: ReturnType<typeof getLocalMonthRange>
+) {
+  const query = new URLSearchParams({
+    targetYear: String(monthRange.year),
+    targetMonth: String(monthRange.month)
+  });
+
+  if (familyContext.source === "wallet" && familyContext.walletAddress) {
+    query.set("walletAddress", familyContext.walletAddress);
+  }
+
+  return `${config.webBaseUrl.replace(/\/$/, "")}/albums/monthly?${query}`;
 }
 
 function buildMonthlyAlbumTitle(year: number, month: number): string {
@@ -239,9 +321,14 @@ function parseOptionalInteger(value: unknown): number | null {
   return null;
 }
 
-async function buildMonthlyMemWalHighlights(monthRange: ReturnType<typeof getLocalMonthRange>) {
+async function buildMonthlyMemWalHighlights(
+  familyContext: FamilyScopedContext,
+  monthRange: ReturnType<typeof getLocalMonthRange>
+) {
   return filterMonthlyHighlights(
-    await recallDemoMonthlyHighlights({
+    await recallMonthlyHighlightsByContext({
+      familyId: familyContext.familyId,
+      memorySpaceId: familyContext.memorySpaceId,
       year: monthRange.year,
       month: monthRange.month,
       limit: 8
@@ -251,7 +338,7 @@ async function buildMonthlyMemWalHighlights(monthRange: ReturnType<typeof getLoc
 }
 
 function filterMonthlyHighlights(
-  recall: Awaited<ReturnType<typeof recallDemoMonthlyHighlights>>,
+  recall: Awaited<ReturnType<typeof recallMonthlyHighlightsByContext>>,
   monthRange: ReturnType<typeof getLocalMonthRange>
 ) {
   if (recall.status !== "ok") {
@@ -276,11 +363,11 @@ function isInMonth(result: EnrichedRecallResult, monthRange: ReturnType<typeof g
   );
 }
 
-async function buildMonthlyMediaAssets(monthRange: ReturnType<typeof getLocalMonthRange>) {
+async function buildMonthlyMediaAssets(familyContext: FamilyScopedContext, monthRange: ReturnType<typeof getLocalMonthRange>) {
   return prisma.mediaAsset.findMany({
     where: {
-      familyId: demoContext.familyId,
-      memorySpaceId: demoContext.memorySpaceId,
+      familyId: familyContext.familyId,
+      memorySpaceId: familyContext.memorySpaceId,
       status: "stored",
       OR: [
         {
