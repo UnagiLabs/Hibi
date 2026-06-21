@@ -8,6 +8,21 @@ export type CareLog = {
   occurredAt: string;
 };
 
+export type MediaAssetPhoto = {
+  id: string;
+  caption: string;
+  originalName: string | null;
+  mimeType: string | null;
+  sizeBytes: number | null;
+  walrusBlobId: string | null;
+  sha256: string | null;
+  status: string;
+  occurredAt: string;
+  createdAt: string;
+  url: string;
+  pageUrl: string;
+};
+
 export type Album = {
   id: string;
   type: string;
@@ -61,6 +76,7 @@ export type BootstrapResponse =
       };
       album?: Album | null;
       careLogs: CareLog[];
+      photos?: MediaAssetPhoto[];
     }
   | {
       ok: false;
@@ -99,19 +115,7 @@ export type MonthlyAlbumHighlight = {
     | null;
 };
 
-export type MonthlyAlbumPhoto = {
-  id: string;
-  caption: string;
-  originalName: string | null;
-  mimeType: string | null;
-  sizeBytes: number | null;
-  walrusBlobId: string | null;
-  sha256: string | null;
-  status: string;
-  occurredAt: string;
-  createdAt: string;
-  url: string;
-};
+export type MonthlyAlbumPhoto = MediaAssetPhoto;
 
 export type MonthlyAlbumResponse =
   | {
@@ -149,10 +153,25 @@ export type MonthlyAlbumResponse =
       error: string;
     };
 
-function buildAuthHeaders(context?: FamilyApiContext): HeadersInit {
-  const walletAddress = normalizeWalletAddress(context?.walletAddress);
-  return walletAddress ? { "x-hibi-wallet": walletAddress } : {};
-}
+export type MediaAssetsResponse =
+  | {
+      ok: true;
+      photos: MediaAssetPhoto[];
+    }
+  | {
+      ok: false;
+      error: string;
+    };
+
+export type MediaAssetResponse =
+  | {
+      ok: true;
+      photo: MediaAssetPhoto;
+    }
+  | {
+      ok: false;
+      error: string;
+    };
 
 export async function fetchMemoryView(
   viewId: string,
@@ -176,16 +195,7 @@ export async function fetchMemoryView(
     };
   }
 
-  return data;
-}
-
-function normalizeWalletAddress(value?: string): string | undefined {
-  if (!value || typeof value !== "string") {
-    return undefined;
-  }
-
-  const normalized = value.trim().toLowerCase();
-  return /^0x[a-f0-9]{64}$/i.test(normalized) ? normalized : undefined;
+  return normalizeBootstrapResponse(data);
 }
 
 export async function fetchMonthlyAlbum(
@@ -225,7 +235,7 @@ export async function fetchMonthlyAlbum(
       };
     }
 
-    return normalizeMonthlyAlbumResponse(data, apiBaseUrl);
+    return normalizeMonthlyAlbumResponse(data);
   } catch {
     return {
       ok: false,
@@ -260,21 +270,121 @@ export async function fetchAlbums(context?: FamilyApiContext): Promise<AlbumsRes
   }
 }
 
-function normalizeMonthlyAlbumResponse(
-  data: MonthlyAlbumResponse,
-  apiBaseUrl: string
-): MonthlyAlbumResponse {
+export async function fetchMediaAssets(): Promise<MediaAssetsResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/media-assets`, {
+      cache: "no-store"
+    });
+    const data = (await response.json()) as MediaAssetsResponse;
+
+    if (!response.ok && data.ok !== false) {
+      return {
+        ok: false,
+        error: "Cannot load photos."
+      };
+    }
+
+    return normalizeMediaAssetsResponse(data);
+  } catch {
+    return {
+      ok: false,
+      error: "Cannot connect to Hibi API."
+    };
+  }
+}
+
+export async function fetchMediaAsset(mediaId: string): Promise<MediaAssetResponse> {
+  const apiBaseUrl = getApiBaseUrl();
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/media-assets/${encodeURIComponent(mediaId)}`, {
+      cache: "no-store"
+    });
+    const data = (await response.json()) as MediaAssetResponse;
+
+    if (!response.ok && data.ok !== false) {
+      return {
+        ok: false,
+        error: response.status === 404 ? "Photo was not found." : "Cannot load photo."
+      };
+    }
+
+    return normalizeMediaAssetResponse(data);
+  } catch {
+    return {
+      ok: false,
+      error: "Cannot connect to Hibi API."
+    };
+  }
+}
+
+function buildAuthHeaders(context?: FamilyApiContext): HeadersInit {
+  const walletAddress = normalizeWalletAddress(context?.walletAddress);
+  return walletAddress ? { "x-hibi-wallet": walletAddress } : {};
+}
+
+function normalizeWalletAddress(value?: string): string | undefined {
+  if (!value || typeof value !== "string") {
+    return undefined;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  return /^0x[a-f0-9]{64}$/i.test(normalized) ? normalized : undefined;
+}
+
+function getApiBaseUrl(): string {
+  return (process.env.HIBI_API_URL ?? "http://127.0.0.1:4000").replace(/\/$/, "");
+}
+
+function normalizeBootstrapResponse(data: BootstrapResponse): BootstrapResponse {
   if (!data.ok) {
     return data;
   }
 
-  const baseUrl = apiBaseUrl.replace(/\/$/, "");
+  return {
+    ...data,
+    photos: data.photos?.map(normalizePhoto)
+  };
+}
+
+function normalizeMonthlyAlbumResponse(data: MonthlyAlbumResponse): MonthlyAlbumResponse {
+  if (!data.ok) {
+    return data;
+  }
 
   return {
     ...data,
-    photos: data.photos.map((photo) => ({
-      ...photo,
-      url: photo.url.startsWith("http") ? photo.url : `${baseUrl}${photo.url}`
-    }))
+    photos: data.photos.map(normalizePhoto)
+  };
+}
+
+function normalizeMediaAssetsResponse(data: MediaAssetsResponse): MediaAssetsResponse {
+  if (!data.ok) {
+    return data;
+  }
+
+  return {
+    ...data,
+    photos: data.photos.map(normalizePhoto)
+  };
+}
+
+function normalizeMediaAssetResponse(data: MediaAssetResponse): MediaAssetResponse {
+  if (!data.ok) {
+    return data;
+  }
+
+  return {
+    ...data,
+    photo: normalizePhoto(data.photo)
+  };
+}
+
+function normalizePhoto(photo: MediaAssetPhoto): MediaAssetPhoto {
+  return {
+    ...photo,
+    url: `/api/media/${encodeURIComponent(photo.id)}/blob`
   };
 }

@@ -100,6 +100,15 @@ export const demoAlbums: DemoAlbum[] = [
     photoCount: 6
   },
   {
+    id: "a-photos",
+    type: "photo_gallery",
+    href: "/albums/photos",
+    cover: "yellow",
+    title: { en: "Photo Library", ja: "写真ライブラリ" },
+    hint: { en: "All saved photos", ja: "保存した写真すべて" },
+    photoCount: 0
+  },
+  {
     id: "a-care",
     type: "care_log_day",
     href: "/v/demo",

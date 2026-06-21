@@ -1,10 +1,11 @@
 import { Archive, CalendarDays, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 import { PhotoTile, SectionHeader } from "@/components/memory-ui";
 import { SiteHeader } from "@/components/site-header";
 import { demoHighlightPhotos, demoMilestones, demoNotes } from "@/lib/demo";
 import { fetchMonthlyAlbum, type MonthlyAlbumHighlight, type MonthlyAlbumPhoto } from "@/lib/api";
-import { getDictionary, parseLocale, type Locale } from "@/lib/i18n";
+import { getDictionary, parseLocale, withLocale, type Locale } from "@/lib/i18n";
 
 type PageProps = {
   searchParams: Promise<{
@@ -66,7 +67,7 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
         <SectionHeader eyebrow={dictionary.monthlyEyebrow} title={dictionary.highlightPhotos} />
         <div className="photo-grid">
           {uploadedPhotos.length > 0
-            ? uploadedPhotos.map((photo) => <UploadedPhotoTile key={photo.id} photo={photo} />)
+            ? uploadedPhotos.map((photo) => <UploadedPhotoTile key={photo.id} photo={photo} locale={locale} />)
             : demoHighlightPhotos.map((photo) => <PhotoTile key={photo.id} photo={photo} locale={locale} />)}
         </div>
       </section>
@@ -114,12 +115,12 @@ function parseWalletAddress(value?: string | string[]): string | undefined {
   return /^0x[a-f0-9]{64}$/i.test(normalized) ? normalized : undefined;
 }
 
-function UploadedPhotoTile({ photo }: { photo: MonthlyAlbumPhoto }) {
+function UploadedPhotoTile({ photo, locale }: { photo: MonthlyAlbumPhoto; locale: Locale }) {
   return (
-    <figure className="photo-tile photo-tile-image">
+    <Link className="photo-tile photo-tile-image" href={withLocale(`/albums/photos/${photo.id}`, locale)}>
       <img src={photo.url} alt={photo.caption} />
-      <figcaption className="photo-caption">{photo.caption}</figcaption>
-    </figure>
+      <span className="photo-caption">{photo.caption}</span>
+    </Link>
   );
 }
 

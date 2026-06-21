@@ -39,7 +39,7 @@ const QUICK_ACTIONS: QuickAction[] = [
   { key: "onThisDay", href: "/albums/on-this-day", tone: "green", Icon: History },
   { key: "openAlbum", href: "/albums", tone: "blue", Icon: Images },
   { key: "careLog", href: "/v/demo", tone: "pink", Icon: Baby },
-  { key: "photoLibrary", href: "/albums", tone: "green", Icon: Camera, soon: true }
+  { key: "photoLibrary", href: "/albums/photos", tone: "green", Icon: Camera }
 ];
 
 export default async function HomePage({ searchParams }: PageProps) {

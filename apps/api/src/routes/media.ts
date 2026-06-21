@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 
 import { prisma } from "../db.js";
+import { buildPhotoGalleryUrl, serializeMediaAssetPhoto } from "../media-assets.js";
 import { rememberMemoryItem } from "../memwal/remember.js";
 import { resolveFamilyContext } from "../family-context.js";
 import { readBlobFromWalrus, uploadMediaToWalrus } from "../walrus/client.js";
@@ -103,11 +104,100 @@ export async function registerMediaRoutes(server: FastifyInstance) {
 
     return reply.status(201).send({
       ok: true,
-      mediaAsset: serializeMediaAsset(updatedMediaAsset),
+      mediaAsset: serializeMediaAssetPhoto(updatedMediaAsset, memoryItem),
       memoryItemId: memoryItem?.id ?? null,
       walrus,
       memwal
     });
+  });
+
+  server.get("/api/media-assets", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
+
+    const mediaAssets = await prisma.mediaAsset.findMany({
+      where: {
+        familyId: familyContext.familyId,
+        memorySpaceId: familyContext.memorySpaceId,
+        status: "stored"
+      },
+      include: {
+        memoryItems: {
+          orderBy: {
+            occurredAt: "asc"
+          },
+          take: 1
+        }
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
+
+    return {
+      ok: true,
+      photos: mediaAssets.map((mediaAsset) => serializeMediaAssetPhoto(mediaAsset, mediaAsset.memoryItems[0] ?? null))
+    };
+  });
+
+  server.get<{ Params: { mediaId: string } }>("/api/media-assets/:mediaId", async (request, reply) => {
+    const contextResult = await resolveFamilyContext(request);
+
+    if (!contextResult.ok) {
+      return reply.status(contextResult.status).send({
+        ok: false,
+        error: contextResult.error
+      });
+    }
+
+    const familyContext = contextResult.context;
+
+    const mediaAsset = await prisma.mediaAsset.findFirst({
+      where: {
+        id: request.params.mediaId,
+        familyId: familyContext.familyId,
+        memorySpaceId: familyContext.memorySpaceId,
+        status: "stored"
+      },
+      include: {
+        memoryItems: {
+          orderBy: {
+            occurredAt: "asc"
+          },
+          take: 1
+        }
+      }
+    });
+
+    if (!mediaAsset) {
+      return reply.status(404).send({
+        ok: false,
+        error: "Media asset was not found."
+      });
+    }
+
+    return {
+      ok: true,
+      photo: serializeMediaAssetPhoto(mediaAsset, mediaAsset.memoryItems[0] ?? null)
+    };
+  });
+
+  server.post("/api/media/gallery-link", async () => {
+    const viewUrl = buildPhotoGalleryUrl();
+
+    return {
+      ok: true,
+      viewUrl,
+      reply: `写真ライブラリはこちらです。${viewUrl}`
+    };
   });
 
   server.get<{ Params: { mediaId: string } }>("/api/media/:mediaId/blob", async (request, reply) => {
@@ -233,27 +323,4 @@ function parseOccurredAt(value: string | undefined): Date | null {
 
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function serializeMediaAsset(mediaAsset: {
-  id: string;
-  originalName: string | null;
-  mimeType: string | null;
-  sizeBytes: number | null;
-  walrusBlobId: string | null;
-  sha256: string | null;
-  status: string;
-  createdAt: Date;
-}) {
-  return {
-    id: mediaAsset.id,
-    originalName: mediaAsset.originalName,
-    mimeType: mediaAsset.mimeType,
-    sizeBytes: mediaAsset.sizeBytes,
-    walrusBlobId: mediaAsset.walrusBlobId,
-    sha256: mediaAsset.sha256,
-    status: mediaAsset.status,
-    createdAt: mediaAsset.createdAt.toISOString(),
-    url: mediaAsset.walrusBlobId ? `/api/media/${mediaAsset.id}/blob` : null
-  };
 }

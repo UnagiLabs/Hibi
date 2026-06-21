@@ -7,6 +7,7 @@ import {
   recallMonthlyHighlightsByContext,
   type EnrichedRecallResult
 } from "../memwal/recall.js";
+import { serializeMediaAssetPhoto } from "../media-assets.js";
 import { resolveFamilyContext } from "../family-context.js";
 import { recordAlbumOnSui } from "../sui/client.js";
 import { getLocalMonthRange, getLocalMonthRangeFromParts } from "../time/month-range.js";
@@ -117,7 +118,7 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       manifestWalrusBlobId: album?.manifestWalrusBlobId ?? null,
       manifestSha256: album?.manifestSha256 ?? null,
       status: album?.status ?? "not_generated",
-      photos: mediaAssets.map(serializeMonthlyPhoto),
+      photos: mediaAssets.map((mediaAsset) => serializeMediaAssetPhoto(mediaAsset, mediaAsset.memoryItems[0] ?? null)),
       memwalHighlights
     });
   });
@@ -250,7 +251,7 @@ export async function registerAlbumRoutes(server: FastifyInstance) {
       manifestWalrusBlobId: updatedAlbum.manifestWalrusBlobId,
       manifestSha256: updatedAlbum.manifestSha256,
       status: updatedAlbum.status,
-      photos: mediaAssets.map(serializeMonthlyPhoto),
+      photos: mediaAssets.map((mediaAsset) => serializeMediaAssetPhoto(mediaAsset, mediaAsset.memoryItems[0] ?? null)),
       memwalHighlights,
       walrusArtifact,
       suiRecord,
@@ -406,22 +407,4 @@ async function buildMonthlyMediaAssets(familyContext: FamilyScopedContext, month
       createdAt: "asc"
     }
   });
-}
-
-function serializeMonthlyPhoto(mediaAsset: Awaited<ReturnType<typeof buildMonthlyMediaAssets>>[number]) {
-  const memoryItem = mediaAsset.memoryItems[0] ?? null;
-
-  return {
-    id: mediaAsset.id,
-    caption: memoryItem?.body ?? mediaAsset.originalName ?? "Photo",
-    originalName: mediaAsset.originalName,
-    mimeType: mediaAsset.mimeType,
-    sizeBytes: mediaAsset.sizeBytes,
-    walrusBlobId: mediaAsset.walrusBlobId,
-    sha256: mediaAsset.sha256,
-    status: mediaAsset.status,
-    occurredAt: (memoryItem?.occurredAt ?? mediaAsset.createdAt).toISOString(),
-    createdAt: mediaAsset.createdAt.toISOString(),
-    url: `/api/media/${mediaAsset.id}/blob`
-  };
 }
