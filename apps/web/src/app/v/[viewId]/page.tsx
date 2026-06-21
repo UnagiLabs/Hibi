@@ -15,10 +15,12 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { SiteHeader } from "@/components/site-header";
-import type { CareLog, MediaAssetPhoto } from "@/lib/api";
+import type { BootstrapResponse, CareLog, MediaAssetPhoto } from "@/lib/api";
 import { fetchMemoryView } from "@/lib/api";
 import { formatCareLogValue, formatDateRange, formatMonthRange, formatTime } from "@/lib/format";
 import { getDictionary, parseLocale, withLocale, type Locale } from "@/lib/i18n";
+
+type ReadyMemoryViewResponse = Extract<BootstrapResponse, { ok: true }>;
 
 type PageProps = {
   params: Promise<{ viewId: string }>;
@@ -34,8 +36,18 @@ export default async function MemoryViewPage({ params, searchParams }: PageProps
   const locale = parseLocale(query.lang);
   const dictionary = getDictionary(locale);
   const walletAddress = parseWalletAddress(query.walletAddress);
-  const response = await safeFetchMemoryView(viewId, { walletAddress });
   const currentPath = `/v/${viewId}`;
+
+  if (viewId === "demo") {
+    return (
+      <main className="shell">
+        <SiteHeader locale={locale} currentPath={currentPath} active="careLog" />
+        <CareLogView response={buildDemoCareLogResponse(locale)} locale={locale} />
+      </main>
+    );
+  }
+
+  const response = await safeFetchMemoryView(viewId, { walletAddress });
 
   if (!response.ok) {
     return (
@@ -67,7 +79,7 @@ function CareLogView({
   response,
   locale
 }: {
-  response: Extract<Awaited<ReturnType<typeof fetchMemoryView>>, { ok: true }>;
+  response: ReadyMemoryViewResponse;
   locale: Locale;
 }) {
   const dictionary = getDictionary(locale);
@@ -113,7 +125,7 @@ function AlbumView({
   response,
   locale
 }: {
-  response: Extract<Awaited<ReturnType<typeof fetchMemoryView>>, { ok: true }>;
+  response: ReadyMemoryViewResponse;
   locale: Locale;
 }) {
   const dictionary = getDictionary(locale);
@@ -251,6 +263,121 @@ async function safeFetchMemoryView(viewId: string, context: { walletAddress?: st
       state: undefined
     };
   }
+}
+
+function buildDemoCareLogResponse(locale: Locale): ReadyMemoryViewResponse {
+  const copy = {
+    en: {
+      milk: "Drank 120ml of milk",
+      sleepEnd: "Slept through the night",
+      pee: "Diaper changed",
+      poop: "Poop recorded",
+      temperature: "Morning temperature checked",
+      sleepStart: "Nap started",
+      breastfeeding: "Nursed after the walk",
+      milkEvening: "Drank 90ml after smiling at the window light"
+    },
+    ja: {
+      milk: "ミルク120ml飲んだ",
+      sleepEnd: "朝までぐっすり眠れた",
+      pee: "おむつを替えた",
+      poop: "うんちを記録",
+      temperature: "朝の体温をチェック",
+      sleepStart: "お昼寝を開始",
+      breastfeeding: "お散歩のあとに授乳",
+      milkEvening: "窓の光を見て笑ったあと、ミルク90ml"
+    }
+  }[locale];
+
+  const careLogs: CareLog[] = [
+    {
+      id: "demo-care-1",
+      category: "sleep_end",
+      amount: null,
+      unit: null,
+      value: null,
+      sourceText: copy.sleepEnd,
+      occurredAt: "2026-06-04T06:40:00.000Z"
+    },
+    {
+      id: "demo-care-2",
+      category: "milk",
+      amount: 120,
+      unit: "ml",
+      value: null,
+      sourceText: copy.milk,
+      occurredAt: "2026-06-04T07:20:00.000Z"
+    },
+    {
+      id: "demo-care-3",
+      category: "pee",
+      amount: null,
+      unit: null,
+      value: null,
+      sourceText: copy.pee,
+      occurredAt: "2026-06-04T08:05:00.000Z"
+    },
+    {
+      id: "demo-care-4",
+      category: "poop",
+      amount: null,
+      unit: null,
+      value: null,
+      sourceText: copy.poop,
+      occurredAt: "2026-06-04T09:10:00.000Z"
+    },
+    {
+      id: "demo-care-5",
+      category: "temperature",
+      amount: null,
+      unit: null,
+      value: 36.7,
+      sourceText: copy.temperature,
+      occurredAt: "2026-06-04T10:00:00.000Z"
+    },
+    {
+      id: "demo-care-6",
+      category: "sleep_start",
+      amount: null,
+      unit: null,
+      value: null,
+      sourceText: copy.sleepStart,
+      occurredAt: "2026-06-04T12:30:00.000Z"
+    },
+    {
+      id: "demo-care-7",
+      category: "breastfeeding",
+      amount: 15,
+      unit: "min",
+      value: null,
+      sourceText: copy.breastfeeding,
+      occurredAt: "2026-06-04T15:15:00.000Z"
+    },
+    {
+      id: "demo-care-8",
+      category: "milk",
+      amount: 90,
+      unit: "ml",
+      value: null,
+      sourceText: copy.milkEvening,
+      occurredAt: "2026-06-04T17:45:00.000Z"
+    }
+  ];
+
+  return {
+    ok: true,
+    state: "ready",
+    view: {
+      id: "demo",
+      type: "care_log_day",
+      status: "active",
+      rangeStart: "2026-06-04T00:00:00.000Z",
+      rangeEnd: "2026-06-05T00:00:00.000Z"
+    },
+    album: null,
+    careLogs,
+    photos: []
+  };
 }
 
 function parseWalletAddress(value?: string | string[]): string | undefined {
