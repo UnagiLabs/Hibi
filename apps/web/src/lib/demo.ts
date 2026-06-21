@@ -2,8 +2,8 @@ import type { Locale } from "./i18n";
 
 /**
  * Frontend demo data so the album experience is fully navigable before the
- * `/api/albums/*` endpoints exist. Photos are represented as soft color tones
- * rather than image URLs so the layout reads as "memories" without real media.
+ * `/api/albums/*` endpoints exist. Some tiles use privacy-safe sample photos;
+ * others keep soft color tones for lightweight album placeholders.
  */
 
 export type Tone = "pink" | "yellow" | "green" | "blue";
@@ -11,6 +11,7 @@ export type Tone = "pink" | "yellow" | "green" | "blue";
 export type DemoPhoto = {
   id: string;
   tone: Tone;
+  src?: string;
   caption: Record<Locale, string>;
 };
 
@@ -36,9 +37,10 @@ export type DemoNote = {
   text: Record<Locale, string>;
 };
 
-const photo = (id: string, tone: Tone, en: string, ja: string): DemoPhoto => ({
+const photo = (id: string, tone: Tone, en: string, ja: string, src?: string): DemoPhoto => ({
   id,
   tone,
+  src,
   caption: { en, ja }
 });
 
@@ -147,16 +149,26 @@ export const demoOnThisDay: DemoMemoryYear[] = [
     id: "y1",
     yearsAgo: 1,
     photos: [
-      photo("otd1", "pink", "First steps in the garden", "庭ではじめての一歩"),
-      photo("otd2", "yellow", "Ice cream face", "アイスで口まわりベタベタ")
+      photo("otd1", "yellow", "Wrapped up after a family drive", "家族で出かけた帰り道", "/IMG_1593.jpeg"),
+      photo("otd2", "green", "The dogs napping nearby", "そばで眠る犬たち", "/IMG_1594.jpeg"),
+      photo("otd3", "blue", "A quiet afternoon nap", "静かなお昼寝", "/IMG_1599.jpeg")
     ],
-    note: { en: "Took three wobbly steps before tumbling into the grass.", ja: "3歩あるいて、草の上にころん。" }
+    note: {
+      en: "A normal day, but exactly the kind of day we forget: a car ride, sleepy dogs, and one small nap.",
+      ja: "車でのお出かけ、そばで眠る犬たち、小さなお昼寝。忘れそうな普通の日ほど、あとで見返したくなる。"
+    }
   },
   {
     id: "y2",
     yearsAgo: 2,
-    photos: [photo("otd3", "green", "Tiny hands, big yawn", "ちいさな手、大きなあくび")],
-    note: { en: "So small. Slept most of the day.", ja: "とても小さくて、一日中ねんね。" }
+    photos: [
+      photo("otd4", "pink", "First tiny blanket", "はじめての小さなブランケット", "/IMG_1596.jpeg"),
+      photo("otd5", "blue", "Soft bear outfit", "ふわふわのくまさん服", "/IMG_1598.jpeg")
+    ],
+    note: {
+      en: "So small that every blanket looked huge. Hibi keeps these early days close without making the family sort everything by hand.",
+      ja: "どのブランケットも大きく見えるくらい小さかった頃。Hibiなら、家族が手で整理しなくても初期の記憶を近くに残せる。"
+    }
   }
 ];
 

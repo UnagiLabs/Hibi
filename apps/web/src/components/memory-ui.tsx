@@ -4,6 +4,15 @@ import type { DemoPhoto } from "@/lib/demo";
 import type { Locale } from "@/lib/i18n";
 
 export function PhotoTile({ photo, locale }: { photo: DemoPhoto; locale: Locale }) {
+  if (photo.src) {
+    return (
+      <figure className="photo-tile photo-tile-image">
+        <img src={photo.src} alt={photo.caption[locale]} loading="lazy" />
+        <figcaption className="photo-caption">{photo.caption[locale]}</figcaption>
+      </figure>
+    );
+  }
+
   return (
     <figure className={`photo-tile tone-${photo.tone}`}>
       <figcaption className="photo-caption">{photo.caption[locale]}</figcaption>
