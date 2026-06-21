@@ -1,11 +1,12 @@
-import { Archive, CalendarDays, Sparkles } from "lucide-react";
+import { Archive, Brain, CalendarDays, FileCheck, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 import { PhotoTile, SectionHeader } from "@/components/memory-ui";
 import { SiteHeader } from "@/components/site-header";
 import { demoHighlightPhotos, demoMilestones, demoNotes } from "@/lib/demo";
-import { fetchMonthlyAlbum, type MonthlyAlbumHighlight, type MonthlyAlbumPhoto } from "@/lib/api";
+import { fetchMonthlyAlbum, type MonthlyAlbumHighlight, type MonthlyAlbumPhoto, type MonthlyAlbumResponse } from "@/lib/api";
 import { getDictionary, parseLocale, withLocale, type Locale } from "@/lib/i18n";
+import { hibiSuiContract } from "@/lib/sui-contract";
 
 type PageProps = {
   searchParams: Promise<{
@@ -74,10 +75,12 @@ export default async function MonthlyPage({ searchParams }: PageProps) {
       </section>
 
       <section className="fade-up fade-up-2">
-        <ArchiveStatus
+        <ArchiveProofCard
           locale={locale}
+          albumStatus={monthlyAlbum.ok ? monthlyAlbum.status : "offline"}
           manifestWalrusBlobId={monthlyAlbum.ok ? monthlyAlbum.manifestWalrusBlobId : null}
           manifestSha256={monthlyAlbum.ok ? monthlyAlbum.manifestSha256 : null}
+          memwalHighlights={monthlyAlbum.ok ? monthlyAlbum.memwalHighlights : null}
         />
       </section>
 
@@ -125,34 +128,135 @@ function UploadedPhotoTile({ photo, locale }: { photo: MonthlyAlbumPhoto; locale
   );
 }
 
-function ArchiveStatus({
+function ArchiveProofCard({
   locale,
+  albumStatus,
   manifestWalrusBlobId,
-  manifestSha256
+  manifestSha256,
+  memwalHighlights
 }: {
   locale: Locale;
+  albumStatus: string;
   manifestWalrusBlobId: string | null;
   manifestSha256: string | null;
+  memwalHighlights: Extract<MonthlyAlbumResponse, { ok: true }>["memwalHighlights"] | null;
 }) {
   const dictionary = getDictionary(locale);
-  const proof = manifestWalrusBlobId ?? manifestSha256 ?? "pending";
+  const copy = proofCopy(locale);
+  const walrusReady = Boolean(manifestWalrusBlobId);
+  const manifestReady = Boolean(manifestSha256);
+  const memwalReady = memwalHighlights?.status === "ok";
+  const suiReady = Boolean(hibiSuiContract.familyVaultId && hibiSuiContract.packageId);
+  const walrusProof = manifestWalrusBlobId ? shortenProof(manifestWalrusBlobId) : null;
+  const manifestProof = manifestSha256 ? shortenProof(manifestSha256) : null;
+  const proofRows = [
+    {
+      id: "walrus",
+      Icon: Archive,
+      ready: walrusReady,
+      label: "Walrus",
+      title: walrusReady ? copy.walrusSaved : manifestReady ? copy.manifestReady : copy.pending,
+      proof: walrusProof ?? manifestProof ?? copy.localApiRequired,
+      meta: manifestProof ? `${copy.manifestHash}: ${manifestProof}` : `${copy.albumStatus}: ${albumStatus}`
+    },
+    {
+      id: "memwal",
+      Icon: Brain,
+      ready: memwalReady,
+      label: "MemWal",
+      title: memwalReady ? copy.memwalRecalled : memwalHighlights?.status === "failed" ? copy.failed : copy.pending,
+      proof: memwalReady ? `${memwalHighlights.total} ${copy.recallResults}` : copy.localApiRequired,
+      meta: memwalHighlights?.namespace ? `${copy.namespace}: ${shortenProof(memwalHighlights.namespace)}` : copy.namespacePending
+    },
+    {
+      id: "sui",
+      Icon: ShieldCheck,
+      ready: suiReady,
+      label: "Sui",
+      title: suiReady ? copy.suiConfigured : copy.pending,
+      proof: suiReady ? `${hibiSuiContract.network} FamilyVault` : copy.contractMissing,
+      meta: hibiSuiContract.familyVaultId ? `${copy.vault}: ${shortenProof(hibiSuiContract.familyVaultId)}` : copy.vaultPending
+    }
+  ];
 
   return (
-    <div className="archive-card">
+    <div className="archive-card proof-card">
       <SectionHeader
-        eyebrow={dictionary.archiveStatus}
-        title={manifestWalrusBlobId ? dictionary.walrusSaved : dictionary.walrusPending}
+        eyebrow={dictionary.storageProof}
+        title={copy.title}
+        hint={copy.hint}
       />
       <div className="archive-rows">
-        <div className="archive-row">
-          <span className={`status-dot ${manifestWalrusBlobId ? "ok" : "demo"}`} aria-hidden="true" />
-          <Archive size={18} aria-hidden="true" />
-          <strong>{manifestWalrusBlobId ? "Walrus Blob" : dictionary.manifestHash}</strong>
-          <span className="proof">{shortenProof(proof)}</span>
+        {proofRows.map((row) => (
+          <div className="archive-row proof-row" key={row.id}>
+            <span className={`status-dot ${row.ready ? "ok" : "demo"}`} aria-hidden="true" />
+            <row.Icon size={18} aria-hidden="true" />
+            <div className="proof-main">
+              <span className="proof-label">{row.label}</span>
+              <strong>{row.title}</strong>
+              <span className="proof-meta">{row.meta}</span>
+            </div>
+            <span className="proof">{row.proof}</span>
+          </div>
+        ))}
+        <div className="archive-row proof-row proof-row-compact">
+          <span className={`status-dot ${manifestReady ? "ok" : "demo"}`} aria-hidden="true" />
+          <FileCheck size={18} aria-hidden="true" />
+          <div className="proof-main">
+            <span className="proof-label">{copy.integrity}</span>
+            <strong>{manifestReady ? dictionary.manifestHash : copy.pending}</strong>
+          </div>
+          <span className="proof">{manifestProof ?? copy.localApiRequired}</span>
         </div>
       </div>
     </div>
   );
+}
+
+function proofCopy(locale: Locale) {
+  if (locale === "ja") {
+    return {
+      title: "Archive Proof",
+      hint: "このアルバムがMemWal / Walrus / Suiのどこに接続されているかを1枚で確認できます。",
+      walrusSaved: "AlbumManifest保存済み",
+      manifestReady: "Manifest生成済み",
+      memwalRecalled: "Recall結果あり",
+      suiConfigured: "FamilyVault設定済み",
+      pending: "ローカル実行待ち",
+      failed: "取得失敗",
+      localApiRequired: "local API required",
+      manifestHash: "Manifest hash",
+      albumStatus: "Album status",
+      namespace: "Namespace",
+      namespacePending: "MemWal namespace is shown after local recall.",
+      recallResults: "results",
+      contractMissing: "contract settings missing",
+      vault: "Vault",
+      vaultPending: "FamilyVault ID is not configured.",
+      integrity: "Integrity"
+    };
+  }
+
+  return {
+    title: "Archive Proof",
+    hint: "One card showing where this album connects to MemWal, Walrus, and Sui.",
+    walrusSaved: "AlbumManifest saved",
+    manifestReady: "Manifest generated",
+    memwalRecalled: "Recall results found",
+    suiConfigured: "FamilyVault configured",
+    pending: "Waiting for local run",
+    failed: "Fetch failed",
+    localApiRequired: "local API required",
+    manifestHash: "Manifest hash",
+    albumStatus: "Album status",
+    namespace: "Namespace",
+    namespacePending: "MemWal namespace is shown after local recall.",
+    recallResults: "results",
+    contractMissing: "contract settings missing",
+    vault: "Vault",
+    vaultPending: "FamilyVault ID is not configured.",
+    integrity: "Integrity"
+  };
 }
 
 function MemWalHighlights({

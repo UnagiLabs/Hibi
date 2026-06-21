@@ -5,6 +5,8 @@ const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_WALRUS_EPOCHS = 3;
 const DEFAULT_FAMILY_CONTEXT_MAP: Record<string, { familyId: string; memorySpaceId: string; userId: string }> = {};
 
+const suiNetwork = process.env.SUI_NETWORK?.trim() || "testnet";
+
 function readPort(value: string | undefined): number {
   if (!value) {
     return DEFAULT_PORT;
@@ -82,7 +84,7 @@ export const config = {
     env: process.env.MEMWAL_ENV?.trim() || "testnet"
   },
   sui: {
-    network: process.env.SUI_NETWORK?.trim() || "testnet",
+    network: suiNetwork,
     privateKey: process.env.SUI_PRIVATE_KEY?.trim() || undefined,
     packageId: process.env.HIBI_SUI_PACKAGE_ID?.trim() || undefined,
     adminCapId: process.env.HIBI_SUI_ADMIN_CAP_ID?.trim() || undefined,
@@ -91,6 +93,11 @@ export const config = {
   },
   walrus: {
     epochs: readPositiveInteger(process.env.WALRUS_EPOCHS, DEFAULT_WALRUS_EPOCHS, "WALRUS_EPOCHS"),
+    aggregatorUrl:
+      process.env.WALRUS_AGGREGATOR_URL?.trim() ||
+      (suiNetwork === "mainnet"
+        ? "https://aggregator.walrus-mainnet.walrus.space"
+        : "https://aggregator.walrus-testnet.walrus.space"),
     uploadRelayUrl:
       process.env.WALRUS_UPLOAD_RELAY_URL?.trim() ||
       "https://upload-relay.testnet.walrus.space"
