@@ -21,7 +21,9 @@ export function WalletStatus({ locale }: { locale: Locale }) {
           <span>{account ? shortenAddress(account.address) : dictionary.walletDemoMode}</span>
         </div>
       </div>
-      <ConnectButton />
+      <div className="wallet-connect-trigger">
+        <ConnectButton />
+      </div>
     </section>
   );
 }

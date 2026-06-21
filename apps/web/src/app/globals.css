@@ -96,6 +96,8 @@ a {
   display: flex;
   align-items: center;
   gap: 16px;
+  position: relative;
+  z-index: 100;
   padding: 10px 14px;
   margin-bottom: 30px;
   border: 1px solid var(--line);
@@ -186,12 +188,19 @@ a {
   display: flex;
   align-items: center;
   gap: 10px;
+  position: relative;
+  z-index: 20;
   min-height: 46px;
   padding: 6px 8px 6px 10px;
   border: 1px solid var(--line);
   border-radius: var(--r-pill);
   background: var(--surface);
   box-shadow: var(--shadow-sm);
+}
+
+.wallet-connect-trigger {
+  position: relative;
+  z-index: 2;
 }
 
 .wallet-panel.skeleton {
@@ -257,6 +266,18 @@ a {
 
 .wallet-panel button:hover {
   transform: translateY(-1px);
+}
+
+/* Ensure wallet connect overlays are not hidden behind cards/content. */
+[role='dialog'],
+[data-radix-popper-content-wrapper],
+[data-radix-portal],
+[aria-modal='true'],
+[role='menu'],
+[role='listbox'],
+.mysten-wallet-standard-dialog {
+  position: relative;
+  z-index: 2147483647 !important;
 }
 
 .family-access-panel {
