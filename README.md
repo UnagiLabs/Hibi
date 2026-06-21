@@ -2,80 +2,101 @@
 
 Family memories, remembered.
 
-Hibi is an OpenClaw-powered chat-first family memory agent.
+Hibi is a chat-first family memory agent for the moments that are easy to lose: a first smile, a bottle at midnight, a photo from a walk, a small sentence a child says once and never repeats.
 
-Families send photos, baby care logs, pet memories, and everyday moments through chat. Hibi classifies the input, stores long-term memories with MemWal, stores photos and generated albums with Walrus, and records verifiable pointers and hashes on Sui.
+Families should not have to organize all of that by hand. With Hibi, they send photos and care logs through chat, and Hibi turns them into a private long-term memory archive that can be searched, revisited, and verified later.
 
-## MVP Scope
+## Why It Matters
 
-- OpenClaw Plugin for chat input
-- Hibi API for workflows and persistence
-- Album, care log, and archive status web views
-- MemWal integration for long-term AI memory
-- Walrus integration for photos and generated albums
-- Sui FamilyVault or pointer/hash recording
-- Self-hostable OSS setup
+Family memories are scattered across camera rolls, chat apps, baby tracker apps, cloud drives, and old phones. The important pieces are often mixed with thousands of ordinary files, and the people who care about them most are usually too busy to sort them.
+
+Hibi makes the archive feel natural:
+
+- Send a photo or note in chat.
+- Hibi understands whether it is a memory, care log, or album request.
+- Hibi remembers the context with MemWal.
+- Hibi stores photos and album artifacts on Walrus.
+- Hibi records verifiable pointers and hashes on Sui.
+- The family gets a simple web view for albums, care logs, and archive status.
+
+The goal is not just storage. The goal is for a family to ask, "What changed this month?" or "What did she start doing recently?" and get back the memories that would otherwise disappear.
+
+## Product Experience
+
+Hibi is designed to feel like this:
+
+1. A parent sends a message such as `ミルク120ml飲んだ` or uploads a photo with a caption.
+2. Hibi saves the care log or memory and returns a web link.
+3. The family opens a polished album or daily log view.
+4. Later, the family asks a recall question and Hibi finds relevant memories.
+5. The archive can show Walrus and Sui proof that important artifacts were saved.
+
+The public website uses sample family demo content to show the intended experience safely. The real API is local-first because family photos, baby logs, and relationship data are private.
+
+## Local-First Privacy Model
+
+Hibi separates the public web experience from the private data workflow:
+
+- The web app can be hosted publicly as a product showcase and viewer.
+- The API runs in the family's own local or private environment.
+- Secrets, photos, care logs, wallet mapping, and archive operations stay under the user's control.
+- Public demo data is clearly treated as sample data, while the local API proves the real workflow.
+
+This is a deliberate privacy choice, not a limitation. Family memory should be portable, verifiable, and owned by the family.
+
+## What Works Today
+
+The current MVP includes:
+
+- Hibi API for message intake, persistence, photo upload, recall, and album generation.
+- OpenClaw plugin tools for text memory, photo upload, memory recall, photo gallery links, and monthly album generation.
+- Web views for sample demo, albums, photos, care logs, wallet status, and archive proof.
+- MemWal integration for long-term AI memory.
+- Walrus testnet storage for photos and monthly `AlbumManifest` artifacts.
+- Sui testnet `FamilyVault`, `FamilyMemberSBT`, and album proof records.
+- SQLite local persistence for the self-hosted OSS flow.
+
+## Hackathon Demo Path
+
+For a short judge review, the clearest flow is:
+
+1. Show the public sample website so the product feeling is obvious in the first few seconds.
+2. Send a photo and caption through OpenClaw or the Hibi API.
+3. Save a care log such as `ミルク120ml飲んだ`.
+4. Generate a monthly album and open the returned web URL.
+5. Ask a recall question such as `最近できるようになったことは？`.
+6. Show the MemWal result, Walrus blob ID, and Sui transaction or object proof.
+
+This keeps the story simple: chat in, memories preserved, beautiful family view out, verifiable archive underneath.
+
+## Architecture
+
+```text
+OpenClaw / Telegram / Chat
+  -> Hibi OpenClaw Plugin
+  -> Hibi API
+     -> SQLite: local index and care logs
+     -> MemWal: long-term AI memory
+     -> Walrus: photos and album artifacts
+     -> Sui: FamilyVault, SBT, hashes, pointers
+  -> Hibi Web: albums, photos, care logs, archive status
+```
 
 ## Repository Layout
 
 ```text
 apps/
   api/                  Hibi API
-  web/                  Read-only album, care log, and archive views
+  web/                  Public showcase and read-only family views
 packages/
-  core/                 Shared types, clients, and workflow logic
-  openclaw-plugin/      OpenClaw plugin package
-contracts/             Sui Move contracts
-docker/                Self-hosting compose files
-docs/                  Product, architecture, and roadmap docs
-scripts/               Local development and maintenance scripts
+  openclaw-plugin/      OpenClaw tool plugin
+contracts/
+  hibi/                 Sui Move contracts
+docs/                   Product, architecture, setup, and hackathon notes
+scripts/                Local setup and verification scripts
 ```
 
-## Docs
-
-- [Docs index](docs/README.md)
-- [Product spec](docs/product-spec.md)
-- [Architecture](docs/architecture.md)
-- [Roadmap](docs/roadmap.md)
-- [OpenClaw plugin](docs/openclaw-plugin.md)
-
-## Current Status
-
-The local MVP path is implemented for the Hibi API and Web app:
-
-- Natural-language memory input is saved to SQLite and remembered by MemWal.
-- Photos and monthly AlbumManifest artifacts can be stored on Walrus testnet.
-- AlbumManifest blob IDs and hashes are recorded in the Sui testnet `FamilyVault`.
-- The Web app can connect a Sui wallet and verify the demo `FamilyMemberSBT`.
-
-OpenClaw packaging and production multi-family auth are still future phases.
-
-## Why Hibi uses local API in the OSS setup
-
-Hibi is designed for self-hosted personal use in an OSS flow:
-
-- The web app can be published on Vercel or similar platforms.
-- The API runs in your own environment as your local service endpoint.
-- Photos, caregiving logs, and family relationship data are personal data, so keeping the API local gives you direct data ownership and secret control.
-
-## Quick usage
-
-1. Start API server
-   - `pnpm install`
-   - `cp apps/api/.env.example apps/api/.env`
-   - `pnpm db:migrate`
-   - `pnpm db:seed`
-   - `pnpm dev:api`
-2. Start web app in another terminal
-   - `cp apps/web/.env.example apps/web/.env`
-   - `pnpm dev:web`
-3. Create sample data
-   - `curl -X POST http://127.0.0.1:4000/api/messages -H 'content-type: application/json' -d '{"text":"ミルク120ml飲んだ"}'`
-   - (optional) `curl -X POST http://127.0.0.1:4000/api/albums/generate -H 'content-type: application/json' -d '{"targetYear":2026,"targetMonth":6}'`
-4. Open the returned `viewUrl` in the browser
-5. Connect a Sui wallet and check Albums / Care Log / Archive
-
-## Development
+## Quick Start
 
 Install dependencies:
 
@@ -83,29 +104,20 @@ Install dependencies:
 pnpm install
 ```
 
-Prepare API environment:
+Prepare and start the API:
 
 ```bash
 cp apps/api/.env.example apps/api/.env
-```
-
-Create the local SQLite database:
-
-```bash
 pnpm db:migrate
 pnpm db:seed
-```
-
-Start the Hibi API:
-
-```bash
 pnpm dev:api
 ```
 
-Health check:
+Start the web app in another terminal:
 
 ```bash
-curl http://127.0.0.1:4000/api/health
+cp apps/web/.env.example apps/web/.env
+pnpm dev:web
 ```
 
 Record a care log:
@@ -116,22 +128,9 @@ curl -X POST http://127.0.0.1:4000/api/messages \
   -d '{"text":"ミルク120ml飲んだ"}'
 ```
 
-The response includes a `viewId` and `viewUrl`. Fetch view data for the web app:
+Open the returned `viewUrl` to see the generated care log view.
 
-```bash
-curl http://127.0.0.1:4000/api/memory-views/<viewId>/bootstrap
-```
-
-Start the Hibi Web app in another terminal:
-
-```bash
-cp apps/web/.env.example apps/web/.env
-pnpm dev:web
-```
-
-Open the `viewUrl` returned by `POST /api/messages`.
-
-Create a monthly growth album view:
+Generate a monthly album:
 
 ```bash
 curl -X POST http://127.0.0.1:4000/api/albums/generate \
@@ -139,165 +138,37 @@ curl -X POST http://127.0.0.1:4000/api/albums/generate \
   -d '{"targetYear":2026,"targetMonth":6}'
 ```
 
-Open the returned `viewUrl` to see the album page.
+## Verification
 
-Wallet connection:
+Useful local checks:
 
-- The web view includes a Sui wallet connection panel.
-- The connected wallet is checked for the demo `FamilyMemberSBT` on Sui testnet.
-- When the wallet owns the SBT for the demo `FamilyVault`, the home page shows verified family access.
-
-Full integration verification steps are in [Integration verification](docs/integration-verification.md).
-
-## 日本語版
-
-# Hibi
-
-Family memories, remembered.
-
-Hibi は OpenClaw を土台にした、チャット中心のファミリー思い出保存エージェントです。
-
-家族はチャットで写真、育児ログ、ペットの記録、日常の瞬間を送信します。Hibi は入力を分類し、MemWal に長期記憶を保存し、写真と自動生成アルバムを Walrus に保存し、検証可能なポインターとハッシュを Sui に記録します。
-
-## MVP の対象範囲
-
-- チャット入力用の OpenClaw プラグイン
-- ワークフローと永続化を担う Hibi API
-- アルバム・育児ログ・アーカイブ状況のウェブ表示
-- 長期 AI 記憶のための MemWal 連携
-- 写真・自動生成アルバムのための Walrus 連携
-- ポインターとハッシュの記録（Sui FamilyVault）
-- セルフホスティング可能な OSS 構成
-
-## リポジトリ構成
-
-```text
-apps/
-  api/                  Hibi API
-  web/                  参照専用のアルバム / 育児ログ / アーカイブ画面
-packages/
-  core/                 共通型、クライアント、ワークフロー実装
-  openclaw-plugin/      OpenClaw プラグイン
-contracts/             Sui Move コントラクト
-docker/                セルフホスティング用 Compose 定義
-docs/                  製品、アーキテクチャ、ロードマップ
-scripts/               開発・保守用スクリプト
+```bash
+pnpm test:api
+pnpm typecheck
+pnpm typecheck:openclaw-plugin
+pnpm build:api
+pnpm build:web
+pnpm validate:openclaw-plugin
+sui move test --path contracts/hibi
 ```
 
-## ドキュメント
+Full integration steps are documented in [Integration verification](docs/integration-verification.md).
 
-- [Docs index](docs/README.md)
+## Docs
+
 - [Product spec](docs/product-spec.md)
 - [Architecture](docs/architecture.md)
-- [Roadmap](docs/roadmap.md)
+- [Hackathon notes](docs/hackathon.md)
 - [OpenClaw plugin](docs/openclaw-plugin.md)
+- [Telegram setup](docs/openclaw-telegram-setup.md)
+- [MemWal setup](docs/memwal-setup.md)
+- [Walrus setup](docs/walrus-setup.md)
+- [Sui contracts](docs/sui-contracts.md)
 
-## 現在の進捗
+## 日本語概要
 
-ローカル MVP は Hibi API と Web アプリの実装が完了しています。
+Hibiは、家族の写真や育児ログをチャットで送るだけで、あとから思い出せる形に整理して残すファミリー記憶エージェントです。
 
-- 自然言語でのメモ投稿は SQLite に保存され、MemWal で記憶されます。
-- 写真と月次の `AlbumManifest` アーティファクトは Walrus testnet に保存できます。
-- `AlbumManifest` の blob ID とハッシュは Sui testnet の `FamilyVault` に記録されます。
-- Web アプリは Sui ウォレット接続に対応し、デモ `FamilyMemberSBT` を検証できます。
+忙しい家族は、毎日の小さな出来事をきれいに整理する時間がありません。Hibiは、チャットで送られた写真やメモを理解し、MemWalに記憶し、Walrusに保存し、Suiに検証できる証拠を残します。
 
-OpenClaw のパッケージ化と本番向けのマルチファミリー認証は、今後のフェーズです。
-
-## OSS公開前提のローカルAPI設計
-
-Hibiは、公開しやすいWebとローカル実行のAPIを分離した設計です。
-
-- WebはVercelなどで公開できます。
-- APIは各ユーザーのローカルまたはプライベート環境で起動します。
-- 写真・育児ログ・家族情報は個人情報を含むため、APIをあなたの環境で運用してデータ所有とキー管理を明確にします。
-
-## 使い方（ハンズオン）
-
-1. APIを起動
-   - `pnpm install`
-   - `cp apps/api/.env.example apps/api/.env`
-   - `pnpm db:migrate`
-   - `pnpm db:seed`
-   - `pnpm dev:api`
-2. 別ターミナルでWebを起動
-   - `cp apps/web/.env.example apps/web/.env`
-   - `pnpm dev:web`
-3. サンプルデータを作成
-   - `curl -X POST http://127.0.0.1:4000/api/messages -H 'content-type: application/json' -d '{"text":"ミルク120ml飲んだ"}'`
-   - （任意）`curl -X POST http://127.0.0.1:4000/api/albums/generate -H 'content-type: application/json' -d '{"targetYear":2026,"targetMonth":6}'`
-4. 返却された `viewUrl` をブラウザで開く
-5. Suiウォレットを接続して、アルバム / 育児ログ / アーカイブを確認
-
-## 開発
-
-依存関係をインストール:
-
-```bash
-pnpm install
-```
-
-API 用環境変数を用意:
-
-```bash
-cp apps/api/.env.example apps/api/.env
-```
-
-ローカル SQLite の初期化:
-
-```bash
-pnpm db:migrate
-pnpm db:seed
-```
-
-Hibi API を起動:
-
-```bash
-pnpm dev:api
-```
-
-ヘルスチェック:
-
-```bash
-curl http://127.0.0.1:4000/api/health
-```
-
-育児ログを記録:
-
-```bash
-curl -X POST http://127.0.0.1:4000/api/messages \
-  -H 'content-type: application/json' \
-  -d '{"text":"ミルク120ml飲んだ"}'
-```
-
-レスポンスには `viewId` と `viewUrl` が返ります。Web アプリ向けに表示データを取得:
-
-```bash
-curl http://127.0.0.1:4000/api/memory-views/<viewId>/bootstrap
-```
-
-別ターミナルで Hibi Web を起動:
-
-```bash
-cp apps/web/.env.example apps/web/.env
-pnpm dev:web
-```
-
-`POST /api/messages` のレスポンスで返却された `viewUrl` を開きます。
-
-月次の成長アルバムを作成:
-
-```bash
-curl -X POST http://127.0.0.1:4000/api/albums/generate \
-  -H 'content-type: application/json' \
-  -d '{"targetYear":2026,"targetMonth":6}'
-```
-
-返却された `viewUrl` を開くと、アルバムページを確認できます。
-
-ウォレット接続:
-
-- Web 画面には Sui ウォレット接続パネルがあります。
-- 接続したウォレットは Sui testnet 上のデモ `FamilyMemberSBT` 保有を確認します。
-- デモ `FamilyVault` の SBT を所有している場合、ホーム画面に検証済みファミリーアクセスが表示されます。
-
-統合検証の手順は [Integration verification](docs/integration-verification.md) を参照してください。
+公開Webサイトでは安全なサンプル家族データで完成イメージを見せます。実際のAPIはローカルまたはプライベート環境で動かし、写真、育児ログ、家族情報をユーザー自身が管理できる設計です。
