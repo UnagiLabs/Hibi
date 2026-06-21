@@ -50,13 +50,13 @@ The local MVP path is implemented for the Hibi API and Web app:
 
 OpenClaw packaging and production multi-family auth are still future phases.
 
-## Why the web app is designed for local API during demo
+## Why Hibi uses local API in the OSS setup
 
-The web app is optimized for OSS sharing: it can be hosted publicly (Vercel, Cloudflare Pages, Netlify, etc.), while the API stays on a local workspace.
+Hibi is designed for self-hosted personal use in an OSS flow:
 
-- Photos, caregiving logs, and family relationship data are sensitive information.
-- The API holds environment-specific state and signing credentials, so keeping it local helps protect personal data.
-- This split makes it practical for self-hosted usage while preserving clear and auditable demo steps for each environment.
+- The web app can be published on Vercel or similar platforms.
+- The API runs in your own environment as your local service endpoint.
+- Photos, caregiving logs, and family relationship data are personal data, so keeping the API local gives you direct data ownership and secret control.
 
 ## Quick usage
 
@@ -203,13 +203,13 @@ scripts/               開発・保守用スクリプト
 
 OpenClaw のパッケージ化と本番向けのマルチファミリー認証は、今後のフェーズです。
 
-## OSS時のAPIはローカル起動を前提にする理由
+## OSS公開前提のローカルAPI設計
 
-OSS公開はフロントを見せる運用を前提にし、APIはローカルで起動する構成にしています。
+Hibiは、公開しやすいWebとローカル実行のAPIを分離した設計です。
 
-- 写真・育児ログ・家族情報は個人情報を含むため、データとシークレットを自分の環境で管理しやすい。
-- APIは環境変数やローカルDB状態に依存するため、ローカル起動のほうが安全性と運用コントロールが高い。
-- 将来的に本番認証設計を拡張する場合も、各環境に合わせて展開しやすい。
+- WebはVercelなどで公開できます。
+- APIは各ユーザーのローカルまたはプライベート環境で起動します。
+- 写真・育児ログ・家族情報は個人情報を含むため、APIをあなたの環境で運用してデータ所有とキー管理を明確にします。
 
 ## 使い方（ハンズオン）
 

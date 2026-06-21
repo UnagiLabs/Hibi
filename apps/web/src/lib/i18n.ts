@@ -148,7 +148,7 @@ const dictionaries: Record<Locale, Dictionary> = {
 
     homeHeroTitle: "Family memories, remembered.",
     homeHeroBody:
-      "Open childcare logs and growth albums created from chat, then connect a Sui wallet to prepare for family archive verification.",
+      "Open logs and growth albums created from chat, then connect a Sui wallet for family archive verification in your own self-hosted setup.",
     openViewUrl: "Open a View URL",
     checkApiStatus: "Check API status",
     homeShowcaseTitle: "Try the Hibi experience",
@@ -164,11 +164,11 @@ const dictionaries: Record<Locale, Dictionary> = {
     homeShowcaseCareLogListLabel: "Care log preview",
     homeShowcaseCareLogLink: "Open care log page",
     homeHowToTitle: "How to use Hibi",
-    homeHowToHint: "Start with two terminals and try it in four simple steps.",
+    homeHowToHint: "Run on your own machine in four steps.",
     homeHowToSteps: [
       {
         title: "Run Hibi API",
-        detail: "Start API on one terminal and keep it available at `http://127.0.0.1:4000`."
+        detail: "Start the API service on your own environment at `http://127.0.0.1:4000`."
       },
       {
         title: "Run Hibi Web",
@@ -180,7 +180,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       },
       {
         title: "View memories",
-        detail: "Open a View URL from your local API and explore album / care log pages."
+        detail: "Open a View URL returned by your local API and explore album / care log pages."
       }
     ],
     quickActions: "Where to next?",
@@ -294,7 +294,7 @@ const dictionaries: Record<Locale, Dictionary> = {
 
     homeHeroTitle: "家族の日々を、未来に残す。",
     homeHeroBody:
-      "チャットから生まれた育児ログや成長アルバムを開いて、Suiウォレットを接続すると家族アーカイブの確認に進めます。",
+      "HibiはOSS前提のセルフホスティング設計です。Webは公開しやすく、APIは各自のローカル環境で起動して使います。",
     openViewUrl: "ビューURLを開く",
     checkApiStatus: "API状態を確認",
     homeShowcaseTitle: "Hibi の使い方を試してみる",
@@ -307,16 +307,16 @@ const dictionaries: Record<Locale, Dictionary> = {
     homeShowcaseCareLogBody: "毎日の記録を時系列で確認できる、サッと見えるタイムラインです。",
     homeShowcaseCareLogListLabel: "育児ログの見え方",
     homeShowcaseCareLogLink: "育児ログを見る",
-    homeHowToTitle: "Hibi の使い方",
-    homeHowToHint: "2つの端末でAPIとWebを起動し、4ステップで確認できます。",
+    homeHowToTitle: "ローカル自己運用の手順",
+    homeHowToHint: "自分の端末で4ステップ。データはあなたの環境で管理できます。",
     homeHowToSteps: [
       {
         title: "APIを起動",
-        detail: "1つ目のターミナルでAPIを起動し、`http://127.0.0.1:4000` を待ち状態にします。"
+        detail: "まずAPIを起動し、`http://127.0.0.1:4000` で個人環境のバックエンドを起動します。"
       },
       {
         title: "Webを起動",
-        detail: "2つ目のターミナルでWebを起動し、`http://127.0.0.1:3000` へアクセスします。"
+        detail: "続いてWebを起動し、`http://127.0.0.1:3000` で画面を開きます。"
       },
       {
         title: "ウォレット接続",
@@ -324,7 +324,7 @@ const dictionaries: Record<Locale, Dictionary> = {
       },
       {
         title: "画面を開く",
-        detail: "`POST /api/messages` または `POST /api/albums/generate` の返却viewUrlで閲覧します。"
+        detail: "APIのレスポンスで返ってくるviewUrlを開いて、アルバム / 育児ログを閲覧します。"
       }
     ],
     quickActions: "今日はどこを見る？",
