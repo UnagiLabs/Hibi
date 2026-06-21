@@ -97,9 +97,78 @@ export async function uploadMediaToWalrus({
 }
 
 export async function readBlobFromWalrus(blobId: string): Promise<Uint8Array> {
-  const client = createWalrusClient();
-  return client.walrus.readBlob({
-    blobId
+  const aggregatorResult = await readBlobFromAggregator(blobId);
+
+  if (aggregatorResult.ok) {
+    return aggregatorResult.bytes;
+  }
+
+  try {
+    const client = createWalrusClient();
+    return await client.walrus.readBlob({
+      blobId
+    });
+  } catch (error) {
+    const sdkError = error instanceof Error ? error.message : "Unknown Walrus SDK read error";
+    throw new Error(`Unable to read Walrus blob. Aggregator: ${aggregatorResult.error}. SDK: ${sdkError}`);
+  }
+}
+
+async function readBlobFromAggregator(blobId: string): Promise<
+  | {
+      ok: true;
+      bytes: Uint8Array;
+    }
+  | {
+      ok: false;
+      error: string;
+    }
+> {
+  const aggregatorUrl = config.walrus.aggregatorUrl.replace(/\/$/, "");
+  const errors: string[] = [];
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const url = `${aggregatorUrl}/v1/blobs/${encodeURIComponent(blobId)}`;
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          accept: "application/octet-stream"
+        }
+      });
+
+      if (response.ok) {
+        return {
+          ok: true,
+          bytes: new Uint8Array(await response.arrayBuffer())
+        };
+      }
+
+      errors.push(`${response.status} ${response.statusText}: ${await readResponseSnippet(response)}`);
+    } catch (error) {
+      errors.push(error instanceof Error ? error.message : "Unknown aggregator read error");
+    }
+
+    await wait(400 * (attempt + 1));
+  }
+
+  return {
+    ok: false,
+    error: errors.join("; ")
+  };
+}
+
+async function readResponseSnippet(response: Response): Promise<string> {
+  try {
+    return (await response.text()).slice(0, 200);
+  } catch {
+    return "";
+  }
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
   });
 }
 

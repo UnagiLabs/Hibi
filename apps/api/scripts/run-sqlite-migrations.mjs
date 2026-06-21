@@ -24,15 +24,18 @@ for (const fileName of readdirSync(migrationsDir).filter((file) => file.endsWith
     continue;
   }
 
+  if (fileName === "0002_memory_view_range.sql" && memoryViewSessionRangeColumnsExist(databasePath)) {
+    markMigrationApplied(databasePath, fileName);
+    console.log(`Applied ${fileName} (already satisfied)`);
+    continue;
+  }
+
   const sql = readFileSync(join(migrationsDir, fileName), "utf8");
   execFileSync("sqlite3", [databasePath], {
     input: sql,
     stdio: ["pipe", "inherit", "inherit"]
   });
-  execSql(
-    databasePath,
-    `INSERT INTO "_hibi_migrations" ("name") VALUES ('${escapeSql(fileName)}');`
-  );
+  markMigrationApplied(databasePath, fileName);
   console.log(`Applied ${fileName}`);
 }
 
@@ -75,7 +78,22 @@ function execSql(databasePath, sql) {
   });
 }
 
+function markMigrationApplied(databasePath, fileName) {
+  execSql(
+    databasePath,
+    `INSERT INTO "_hibi_migrations" ("name") VALUES ('${escapeSql(fileName)}');`
+  );
+}
+
+function memoryViewSessionRangeColumnsExist(databasePath) {
+  const columns = execSql(databasePath, `PRAGMA table_info("MemoryViewSession");`)
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map((line) => line.split("|")[1]);
+
+  return columns.includes("rangeStart") && columns.includes("rangeEnd");
+}
+
 function escapeSql(value) {
   return value.replaceAll("'", "''");
 }
-
