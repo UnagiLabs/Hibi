@@ -1,5 +1,6 @@
 import { Languages } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { WalletSlot } from "@/components/wallet-slot";
 import { getDictionary, withLocale, type Locale } from "@/lib/i18n";
@@ -33,7 +34,15 @@ export function SiteHeader({
   return (
     <header className="site-header">
       <Link className="brand-link" href={withLocale("/", locale)} aria-label={dictionary.appName}>
-        <span className="brand-dot" aria-hidden="true" />
+        <Image
+          className="brand-dot"
+          src="/HiBi.png"
+          alt=""
+          aria-hidden="true"
+          width={26}
+          height={26}
+          priority
+        />
         {dictionary.appName}
       </Link>
 

@@ -119,11 +119,10 @@ a {
 }
 
 .brand-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 30%, #ffe39a, var(--yellow));
-  box-shadow: 0 0 0 4px var(--yellow-soft);
+  width: 26px;
+  height: 26px;
+  border-radius: 12px;
+  object-fit: contain;
 }
 
 .site-nav {
@@ -371,10 +370,14 @@ h1, h2, h3, p {
 }
 
 .brand-mark {
-  color: var(--ink);
-  font-size: clamp(40px, 6.4vw, 70px);
-  font-weight: 900;
   line-height: 1;
+  max-width: 170px;
+}
+
+.brand-mark-image {
+  width: min(42vw, 300px);
+  height: auto;
+  object-fit: contain;
 }
 
 .eyebrow {

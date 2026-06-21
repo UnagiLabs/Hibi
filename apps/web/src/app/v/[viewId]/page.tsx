@@ -12,6 +12,7 @@ import {
   Toilet
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { SiteHeader } from "@/components/site-header";
 import type { CareLog, MediaAssetPhoto } from "@/lib/api";
@@ -74,7 +75,16 @@ function CareLogView({
   return (
     <section className="view-layout">
       <div className="summary-panel">
-        <div className="brand-mark">{dictionary.appName}</div>
+        <div className="brand-mark">
+          <Image
+            src="/HiBi.png"
+            alt={dictionary.appName}
+            width={64}
+            height={64}
+            priority
+            className="brand-mark-image"
+          />
+        </div>
         <p className="eyebrow">{dictionary.tagline}</p>
         <h1>{dictionary.todayLog}</h1>
         <div className="date-chip">
