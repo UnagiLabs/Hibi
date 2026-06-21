@@ -39,8 +39,8 @@ export function SiteHeader({
           src="/HiBi.png"
           alt=""
           aria-hidden="true"
-          width={40}
-          height={40}
+          width={72}
+          height={72}
           priority
         />
         {dictionary.appName}

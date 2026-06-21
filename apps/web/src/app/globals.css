@@ -119,8 +119,8 @@ a {
 }
 
 .brand-dot {
-  width: 40px;
-  height: 40px;
+  width: 60px;
+  height: 60px;
   border-radius: 12px;
   background: transparent;
   object-fit: contain;
@@ -372,11 +372,11 @@ h1, h2, h3, p {
 
 .brand-mark {
   line-height: 1;
-  max-width: 170px;
+  max-width: 720px;
 }
 
 .brand-mark-image {
-  width: min(63vw, 450px);
+  width: min(78vw, 680px);
   background: transparent;
   height: auto;
   object-fit: contain;
@@ -1605,6 +1605,15 @@ h2 {
     flex-wrap: wrap;
     border-radius: var(--r-lg);
     padding: 12px 14px;
+  }
+
+  .brand-dot {
+    width: 56px;
+    height: 56px;
+  }
+
+  .brand-mark-image {
+    width: min(82vw, 360px);
   }
 
   .site-nav {
