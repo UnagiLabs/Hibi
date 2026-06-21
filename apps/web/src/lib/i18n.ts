@@ -147,21 +147,22 @@ const dictionaries: Record<Locale, Dictionary> = {
 
     homeHeroTitle: "Family memories, remembered.",
     homeHeroBody:
-      "Open logs and growth albums created from chat, then connect a Sui wallet for family archive verification in your own self-hosted setup.",
-    openViewUrl: "Open a View URL",
+      "Explore a privacy-safe sample family archive, then run the local API to save real photos, care logs, MemWal memories, and Sui/Walrus proofs in your own environment.",
+    openViewUrl: "Open sample care log",
     checkApiStatus: "Check API status",
-    homeShowcaseTitle: "Try the Hibi experience",
-    homeShowcaseHint: "Albums and care logs shown as they appear in the product.",
+    homeShowcaseTitle: "Sample Family Demo",
+    homeShowcaseHint:
+      "A public preview with sample family data. The real workflow runs through your local Hibi API.",
     homeShowcaseAlbumTitle: "Monthly growth album",
     homeShowcaseAlbumBody:
       "Photos, milestones, and notes are grouped into a friendly timeline for each month.",
-    homeShowcaseAlbumCover: "Album preview",
-    homeShowcaseAlbumLink: "Open album page",
+    homeShowcaseAlbumCover: "Privacy-safe album preview",
+    homeShowcaseAlbumLink: "Open sample album",
     homeShowcaseCareLogTitle: "Care log timeline",
     homeShowcaseCareLogBody:
       "Daily care records are easy to scan by day, time, and note.",
-    homeShowcaseCareLogListLabel: "Care log preview",
-    homeShowcaseCareLogLink: "Open care log page",
+    homeShowcaseCareLogListLabel: "Privacy-safe care log preview",
+    homeShowcaseCareLogLink: "Open sample care log",
     homeHowToTitle: "How to use Hibi",
     homeHowToHint: "Run on your own machine in four steps.",
     homeHowToSteps: [
@@ -183,19 +184,19 @@ const dictionaries: Record<Locale, Dictionary> = {
       }
     ],
     quickActions: "Where to next?",
-    quickActionsHint: "Jump straight into your family memories.",
-    recentViews: "Recently opened",
-    recentViewsHint: "Pick up where you left off.",
+    quickActionsHint: "Jump into the sample family archive.",
+    recentViews: "Sample views",
+    recentViewsHint: "Preview the views Hibi returns from the local API.",
     openView: "Open",
     noRecentViews: "No views opened yet. Try a quick action above.",
 
     actions: {
-      thisMonth: { title: "This Month", hint: "Best photos & moments this month" },
-      thisYear: { title: "This Year", hint: "Growth & events of the year" },
-      onThisDay: { title: "On This Day", hint: "A year ago today, and before" },
-      openAlbum: { title: "Open Album", hint: "Browse all your albums" },
-      careLog: { title: "Care Log", hint: "Look back on daily care" },
-      photoLibrary: { title: "Photo Library", hint: "All your saved photos" }
+      thisMonth: { title: "This Month", hint: "Sample monthly album" },
+      thisYear: { title: "This Year", hint: "Sample yearly growth view" },
+      onThisDay: { title: "On This Day", hint: "Sample memory resurfacing" },
+      openAlbum: { title: "Open Album", hint: "Browse sample albums" },
+      careLog: { title: "Care Log", hint: "Preview daily care logs" },
+      photoLibrary: { title: "Photo Library", hint: "Browse sample saved photos" }
     },
 
     albumHubTitle: "Albums",
@@ -232,7 +233,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     monthlyAlbum: "Growth Album",
     monthHighlights: "Monthly Highlights",
     monthSummary: "A monthly view created from saved family care logs.",
-    photosComingSoon: "Photo albums will be added in the next step.",
+    photosComingSoon: "Photos appear here after the local API stores them.",
     savedCareLogs: "Saved care logs",
     timeline: "Timeline",
     sourceText: "Original note",
@@ -241,14 +242,14 @@ const dictionaries: Record<Locale, Dictionary> = {
     ready: "Saved",
 
     archiveStatus: "Archive status",
-    archiveStatusHint: "Where your memories are safely kept.",
+    archiveStatusHint: "Sample proofs show where local memories are archived.",
     storageProof: "Storage proof",
     walrusSaved: "Saved to Walrus",
     walrusPending: "Manifest ready",
     manifestHash: "Manifest hash",
     memwalRemembered: "Remembered by MemWal",
     suiVerified: "Verified on Sui",
-    demoMode: "Demo mode",
+    demoMode: "Sample proof",
     viewDetails: "View details",
 
     notFound: "This view was not found.",
@@ -263,7 +264,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     walletPrompt: "Connect wallet",
     walletConnected: "Connected wallet",
     familyAccess: "Family access",
-    comingSoon: "Coming soon",
+    comingSoon: "Planned",
     ja: "日本語",
     en: "English",
     categories: {
@@ -292,19 +293,19 @@ const dictionaries: Record<Locale, Dictionary> = {
 
     homeHeroTitle: "家族の日々を、未来に残す。",
     homeHeroBody:
-      "HibiはOSS前提のセルフホスティング設計です。Webは公開しやすく、APIは各自のローカル環境で起動して使います。",
-    openViewUrl: "ビューURLを開く",
+      "公開サイトでは安全なサンプル家族アーカイブを見せ、実際の写真・育児ログ・MemWal記憶・Sui/Walrus証明はローカルAPIで保存します。",
+    openViewUrl: "サンプル育児ログを開く",
     checkApiStatus: "API状態を確認",
-    homeShowcaseTitle: "Hibi の使い方を試してみる",
-    homeShowcaseHint: "アルバムと育児ログが、こんな表示になるイメージです。",
+    homeShowcaseTitle: "Sample Family Demo",
+    homeShowcaseHint: "公開用のサンプル家族データです。実データの保存はローカルHibi APIで動きます。",
     homeShowcaseAlbumTitle: "月ごとのアルバム",
     homeShowcaseAlbumBody: "写真やメモ、マイルストーンが月単位でまとまり、成長の流れが見やすくなります。",
-    homeShowcaseAlbumCover: "アルバムの見え方",
-    homeShowcaseAlbumLink: "アルバムを見る",
+    homeShowcaseAlbumCover: "公開用アルバムプレビュー",
+    homeShowcaseAlbumLink: "サンプルアルバムを見る",
     homeShowcaseCareLogTitle: "育児ログ",
     homeShowcaseCareLogBody: "毎日の記録を時系列で確認できる、サッと見えるタイムラインです。",
-    homeShowcaseCareLogListLabel: "育児ログの見え方",
-    homeShowcaseCareLogLink: "育児ログを見る",
+    homeShowcaseCareLogListLabel: "公開用育児ログプレビュー",
+    homeShowcaseCareLogLink: "サンプル育児ログを見る",
     homeHowToTitle: "ローカル自己運用の手順",
     homeHowToHint: "自分の端末で4ステップ。データはあなたの環境で管理できます。",
     homeHowToSteps: [
@@ -326,19 +327,19 @@ const dictionaries: Record<Locale, Dictionary> = {
       }
     ],
     quickActions: "今日はどこを見る？",
-    quickActionsHint: "家族の思い出にすぐ飛べます。",
-    recentViews: "最近開いたビュー",
-    recentViewsHint: "続きからどうぞ。",
+    quickActionsHint: "サンプル家族アーカイブをすぐ確認できます。",
+    recentViews: "サンプルビュー",
+    recentViewsHint: "ローカルAPIが返す画面の見え方を確認できます。",
     openView: "開く",
     noRecentViews: "まだビューを開いていません。上のボタンから試せます。",
 
     actions: {
-      thisMonth: { title: "今月", hint: "今月のいい写真と出来事" },
-      thisYear: { title: "今年", hint: "今年の成長とイベント" },
-      onThisDay: { title: "去年の今日", hint: "1年前の今日、その前も" },
-      openAlbum: { title: "アルバムを開く", hint: "すべてのアルバムを見る" },
-      careLog: { title: "育児ログ", hint: "毎日の記録を振り返る" },
-      photoLibrary: { title: "写真ライブラリ", hint: "保存した写真すべて" }
+      thisMonth: { title: "今月", hint: "サンプル月次アルバム" },
+      thisYear: { title: "今年", hint: "サンプル年間成長ビュー" },
+      onThisDay: { title: "去年の今日", hint: "記憶の再発見サンプル" },
+      openAlbum: { title: "アルバムを開く", hint: "サンプルアルバムを見る" },
+      careLog: { title: "育児ログ", hint: "日々の記録をプレビュー" },
+      photoLibrary: { title: "写真ライブラリ", hint: "サンプル写真を見る" }
     },
 
     albumHubTitle: "アルバム",
@@ -375,7 +376,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     monthlyAlbum: "成長アルバム",
     monthHighlights: "今月のハイライト",
     monthSummary: "日々の記録から、この月の成長をまとめています。",
-    photosComingSoon: "写真アルバムは次のステップで追加します。",
+    photosComingSoon: "ローカルAPIで写真を保存すると、ここに表示されます。",
     savedCareLogs: "保存された育児ログ",
     timeline: "タイムライン",
     sourceText: "入力メモ",
@@ -384,14 +385,14 @@ const dictionaries: Record<Locale, Dictionary> = {
     ready: "保存済み",
 
     archiveStatus: "アーカイブ状態",
-    archiveStatusHint: "思い出が安全に保管されている場所。",
+    archiveStatusHint: "ローカル保存後にどこへ保管されるかを、サンプル証明で示します。",
     storageProof: "保存の証明",
     walrusSaved: "Walrusに保存済み",
     walrusPending: "Manifest生成済み",
     manifestHash: "Manifest hash",
     memwalRemembered: "MemWalが記憶",
     suiVerified: "Suiで検証済み",
-    demoMode: "デモモード",
+    demoMode: "サンプル証明",
     viewDetails: "詳細を見る",
 
     notFound: "このビューは見つかりません。",
@@ -406,7 +407,7 @@ const dictionaries: Record<Locale, Dictionary> = {
     walletPrompt: "ウォレットを接続",
     walletConnected: "接続済みウォレット",
     familyAccess: "家族アクセス",
-    comingSoon: "準備中",
+    comingSoon: "予定",
     ja: "日本語",
     en: "English",
     categories: {

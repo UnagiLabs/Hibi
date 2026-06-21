@@ -122,7 +122,7 @@ function buildAccessCopy(state: SbtCheckState, locale: Locale) {
       },
       verified: {
         title: "Family access verified",
-        body: "This wallet owns the Hibi FamilyMemberSBT for the demo FamilyVault."
+        body: "This wallet owns the Hibi FamilyMemberSBT for the sample FamilyVault."
       },
       missing: {
         title: "No Hibi Family Pass found",
@@ -148,7 +148,7 @@ function buildAccessCopy(state: SbtCheckState, locale: Locale) {
       },
       verified: {
         title: "家族アクセスを確認しました",
-        body: "このウォレットはdemo FamilyVaultのHibi FamilyMemberSBTを持っています。"
+        body: "このウォレットはサンプルFamilyVaultのHibi FamilyMemberSBTを持っています。"
       },
       missing: {
         title: "Hibi Family Passが見つかりません",
