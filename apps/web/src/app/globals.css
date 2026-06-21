@@ -119,9 +119,10 @@ a {
 }
 
 .brand-dot {
-  width: 26px;
-  height: 26px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
+  background: transparent;
   object-fit: contain;
 }
 
@@ -375,7 +376,8 @@ h1, h2, h3, p {
 }
 
 .brand-mark-image {
-  width: min(42vw, 300px);
+  width: min(63vw, 450px);
+  background: transparent;
   height: auto;
   object-fit: contain;
 }

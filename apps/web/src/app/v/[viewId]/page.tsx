@@ -79,8 +79,8 @@ function CareLogView({
           <Image
             src="/HiBi.png"
             alt={dictionary.appName}
-            width={64}
-            height={64}
+            width={96}
+            height={96}
             priority
             className="brand-mark-image"
           />
