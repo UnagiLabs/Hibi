@@ -9,12 +9,12 @@ import {
   Images
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 import { FamilyAccessPanel } from "@/components/family-access-panel";
 import { SiteHeader } from "@/components/site-header";
 import {
-  demoHighlightPhotos,
   demoNotes,
   demoArchiveStatus,
   demoRecentViews,
@@ -49,7 +49,13 @@ export default async function HomePage({ searchParams }: PageProps) {
   const locale = parseLocale(query.lang);
   const dictionary = getDictionary(locale);
   const steps = dictionary.homeHowToSteps;
-  const showcaseAlbumPhotos = demoHighlightPhotos.slice(0, 4);
+  const showcaseAlbumImages = [
+    "/IMG_1593.jpeg",
+    "/IMG_1594.jpeg",
+    "/IMG_1596.jpeg",
+    "/IMG_1598.jpeg"
+  ];
+  const showcaseCareLogImages = ["/IMG_1598.jpeg", "/IMG_1599.jpeg"];
   const showcaseNotes = demoNotes.slice(0, 2);
 
   return (
@@ -100,9 +106,15 @@ export default async function HomePage({ searchParams }: PageProps) {
             <div className="showcase-media" aria-hidden="true">
               <p className="showcase-label">{dictionary.homeShowcaseAlbumCover}</p>
               <div className="mock-photo-grid">
-                {showcaseAlbumPhotos.map((photo) => (
-                  <span key={photo.id} className={`mock-photo tone-${photo.tone}`}>
-                    <span>{photo.caption[locale]}</span>
+                {showcaseAlbumImages.map((image, idx) => (
+                  <span key={image} className="mock-photo">
+                    <Image
+                      className="showcase-media-photo"
+                      src={image}
+                      alt={`${dictionary.homeShowcaseAlbumTitle} ${idx + 1}`}
+                      fill
+                      sizes="(max-width: 720px) 50vw, 160px"
+                    />
                   </span>
                 ))}
               </div>
@@ -121,10 +133,21 @@ export default async function HomePage({ searchParams }: PageProps) {
             <div className="showcase-media" aria-hidden="true">
               <p className="showcase-label">{dictionary.homeShowcaseCareLogListLabel}</p>
               <div className="log-mock">
-                {showcaseNotes.map((note) => (
+                {showcaseNotes.map((note, index) => (
                   <article key={note.id} className="log-item">
-                    <p className="log-date">{note.date[locale]}</p>
-                    <p>{note.text[locale]}</p>
+                    <div className="log-thumb">
+                      <Image
+                        className="log-thumb-img"
+                        src={showcaseCareLogImages[index % showcaseCareLogImages.length]}
+                        alt={`${dictionary.homeShowcaseCareLogTitle} ${index + 1}`}
+                        fill
+                        sizes="82px"
+                      />
+                    </div>
+                    <div>
+                      <p className="log-date">{note.date[locale]}</p>
+                      <p>{note.text[locale]}</p>
+                    </div>
                   </article>
                 ))}
               </div>
