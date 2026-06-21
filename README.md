@@ -50,6 +50,31 @@ The local MVP path is implemented for the Hibi API and Web app:
 
 OpenClaw packaging and production multi-family auth are still future phases.
 
+## Why the web app is designed for local API during demo
+
+The web app is optimized for OSS sharing: it can be hosted publicly (Vercel, Cloudflare Pages, Netlify, etc.), while the API stays on a local workspace.
+
+- Photos, caregiving logs, and family relationship data are sensitive information.
+- The API holds environment-specific state and signing credentials, so keeping it local helps protect personal data.
+- This split makes it practical for self-hosted usage while preserving clear and auditable demo steps for each environment.
+
+## Quick usage
+
+1. Start API server
+   - `pnpm install`
+   - `cp apps/api/.env.example apps/api/.env`
+   - `pnpm db:migrate`
+   - `pnpm db:seed`
+   - `pnpm dev:api`
+2. Start web app in another terminal
+   - `cp apps/web/.env.example apps/web/.env`
+   - `pnpm dev:web`
+3. Create sample data
+   - `curl -X POST http://127.0.0.1:4000/api/messages -H 'content-type: application/json' -d '{"text":"ミルク120ml飲んだ"}'`
+   - (optional) `curl -X POST http://127.0.0.1:4000/api/albums/generate -H 'content-type: application/json' -d '{"targetYear":2026,"targetMonth":6}'`
+4. Open the returned `viewUrl` in the browser
+5. Connect a Sui wallet and check Albums / Care Log / Archive
+
 ## Development
 
 Install dependencies:
@@ -177,6 +202,31 @@ scripts/               開発・保守用スクリプト
 - Web アプリは Sui ウォレット接続に対応し、デモ `FamilyMemberSBT` を検証できます。
 
 OpenClaw のパッケージ化と本番向けのマルチファミリー認証は、今後のフェーズです。
+
+## OSS時のAPIはローカル起動を前提にする理由
+
+OSS公開はフロントを見せる運用を前提にし、APIはローカルで起動する構成にしています。
+
+- 写真・育児ログ・家族情報は個人情報を含むため、データとシークレットを自分の環境で管理しやすい。
+- APIは環境変数やローカルDB状態に依存するため、ローカル起動のほうが安全性と運用コントロールが高い。
+- 将来的に本番認証設計を拡張する場合も、各環境に合わせて展開しやすい。
+
+## 使い方（ハンズオン）
+
+1. APIを起動
+   - `pnpm install`
+   - `cp apps/api/.env.example apps/api/.env`
+   - `pnpm db:migrate`
+   - `pnpm db:seed`
+   - `pnpm dev:api`
+2. 別ターミナルでWebを起動
+   - `cp apps/web/.env.example apps/web/.env`
+   - `pnpm dev:web`
+3. サンプルデータを作成
+   - `curl -X POST http://127.0.0.1:4000/api/messages -H 'content-type: application/json' -d '{"text":"ミルク120ml飲んだ"}'`
+   - （任意）`curl -X POST http://127.0.0.1:4000/api/albums/generate -H 'content-type: application/json' -d '{"targetYear":2026,"targetMonth":6}'`
+4. 返却された `viewUrl` をブラウザで開く
+5. Suiウォレットを接続して、アルバム / 育児ログ / アーカイブを確認
 
 ## 開発
 
