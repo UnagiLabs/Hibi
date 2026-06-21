@@ -1329,6 +1329,16 @@ h2 {
   z-index: 1;
 }
 
+.summary-panel .brand-mark {
+  width: clamp(92px, 28%, 136px);
+  margin-bottom: 18px;
+}
+
+.summary-panel .brand-mark-image {
+  width: 100%;
+  max-width: 100%;
+}
+
 .album-layout {
   display: grid;
   grid-template-columns: minmax(280px, 0.92fr) minmax(360px, 1.08fr);
